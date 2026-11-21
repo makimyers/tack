@@ -3,6 +3,16 @@
 # Own skills, embedded from skills/
 
 [[skill]]
+name = "local-worker"
+description = "Claude hands set tasks to the local model, then checks them"
+source = "own"
+path = "local-worker"
+rev = ""
+harnesses = ["claude"]
+default = ["claude"]
+group = ""
+
+[[skill]]
 name = "goal-loop"
 description = "Keeps working a task list until the checks pass"
 source = "own"

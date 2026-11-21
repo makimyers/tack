@@ -24,7 +24,8 @@ the owner (tack only wires the one `[local_model]` the owner names, see 3.5), ow
 | `tack on <name>... [--claude] [--pi]` | Turn a component or a whole group on. No flag = every harness the component supports. |
 | `tack off <name>... [--claude] [--pi]` | Reverse of `on`. A tool's disable steps run only if tack wired it; otherwise only the state flips. |
 | `tack doctor [--json]` | Checks prerequisites, base tools, links, hook, extension. Each failure prints the cause and one `fix:` line. Exit 1 if any check fails. |
-| `tack open` | Runs the `[local_model]` `up` command in the background (output in `$TACK_HOME/local-model.log`), then starts T3 Code (`t3`). |
+| `tack open` | Starts T3 Code (`t3`); says so when the `[local_model]` is off. |
+| `tack model [status\|on\|off]` | Shows, starts or stops the `[local_model]` (see 3.5). |
 | `tack uninstall` | Refuses (exit 2) unless `$TACK_HOME` holds `bin/tack` or `state.toml`. Runs no tool `disable` steps: prints one line naming the tools still wired and `tack off <names>` to unwire them first. Then removes every link, the Claude hook and the pi extension that tack created, and `$TACK_HOME`. Never uninstalls pi, T3 Code, Claude Code or other tools; prints that they stay. |
 | `tack guard --harness <claude\|pi>` | Hidden. Hook entry point: reads one tool call as JSON on stdin, exits 0 (allow) or 2 (deny, reason on stderr). |
 
@@ -184,12 +185,19 @@ Base tools: `pi` (required, ≥ 0.84.3), `t3` (required), `claude` (detect only)
 ### 3.5 `[local_model]`
 
 Only in `$TACK_HOME/tack.toml`; the shipped catalogue has none. Fields: `name`, `up` (argv that
-starts the server and returns, safe to re-run), `base_url` (http or https), `model` (the server's
-model id), `context`. `install` writes provider `tack-local` into `~/.pi/agent/models.json` and
-`defaultProvider` / `defaultModel` into `~/.pi/agent/settings.json`, keeping every other key, after
-copying each file to `$TACK_HOME/backup/pi-<file>` once. A file that is not a JSON object is left
-alone with a warning. `doctor` fails when `up`'s program is missing and warns when pi's default is
-not this model.
+starts the server and returns, safe to re-run), `down` (optional argv that stops it), `base_url`
+(http or https), `model` (the server's model id), `context`. `install` writes provider `tack-local`
+into `~/.pi/agent/models.json` and `defaultProvider` / `defaultModel` into
+`~/.pi/agent/settings.json`, keeping every other key, after copying each file to
+`$TACK_HOME/backup/pi-<file>` once. It also sets three entries in T3 Code's
+`defaultProjectScripts` (ids `tack-model-status|on|off`, replaced by id, the owner's scripts kept,
+backup `t3-settings.json`). A file that is not a JSON object is left alone with a warning. `doctor`
+fails when `up`'s program is missing and warns when pi's default is not this model.
+
+`tack model [status|on|off]` runs `up` / `down` in the terminal, then probes `base_url/models` for
+the model id: `● <name>: ON`, `○ <name>: OFF`, or `? … cannot check` for https. Exit 1 when the
+command failed or no `[local_model]` (or no `down` for `off`) is set. `open` never starts the model;
+it prints one line when the model is off.
 
 ## 4. Guard
 

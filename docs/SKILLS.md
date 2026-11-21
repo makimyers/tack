@@ -1,10 +1,10 @@
 # Skills: where they came from
 
-The catalogue is `manifest/skills.toml` (schema: `docs/SPEC.md` 3.1). 86 entries:
+The catalogue is `manifest/skills.toml` (schema: `docs/SPEC.md` 3.1). 87 entries:
 
 | Group / source | Entries | On by default |
 |---|---|---|
-| own (`skills/`) | 9 | 7 both harnesses; `one-thing` Claude only; `web-scrape` off |
+| own (`skills/`) | 10 | 7 both harnesses; `one-thing` and `local-worker` Claude only; `web-scrape` off |
 | `bank` (own and third-party, see Bank below) | 20 | none |
 | `superpowers` (obra/superpowers) | 15 | all, Claude Code only (`tack on superpowers --pi` for pi) |
 | `mattpocock` (mattpocock/skills) | 39 | 8, both harnesses (`grill-me`, `grilling`, `to-spec`, `to-tickets`, `triage`, `domain-modeling`, `handoff`, `setup-matt-pocock-skills`); 31 listed, off |
@@ -39,6 +39,10 @@ from `gh repo view`, the epic label is `epic`, the Next file is `docs/roadmap/ne
 - `roadmap-status` calls replaced by the same epic listing as onboard; step 5 is skipped when there is
   no GitHub (was: no roadmap config); the Next file path is fixed at `docs/roadmap/next.json`.
 - Removed "never the page" (no page any more).
+
+**local-worker** (new in tack, 2026-11-21)
+- Claude writes a stand-alone brief, runs `pi -p --no-session --model tack-local/<id>`, then checks
+  `git diff` and the done-check itself. Tested: a two-function pytest task finished in 13 s on Avalon fast.
 
 **capture**
 - `R` from `gh repo view`; `roadmap-status` replaced by the epic listing (the old no-config fallback

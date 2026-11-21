@@ -68,7 +68,7 @@ doctor: 56 ok, 1 warn, 2 fail
 
 - Both agents: `guard`, `rules`, `goal-loop`, `onboard`, `wrap`, `capture`, `breakdown`,
   `multitree`, `i-have-adhd`, the default members of the `mattpocock` group, `rtk`.
-- Claude Code only: `one-thing`, `security-audit`, the `superpowers` group (it adds
+- Claude Code only: `one-thing`, `security-audit`, `local-worker` (hands tasks to the local model), the `superpowers` group (it adds
   about 1,200 prompt tokens in pi; `tack on superpowers --pi` turns it on there).
 - Off until you turn them on: `context-mode`, `web-scrape`, `impeccable`, `skillevaluator`, `tgrep`
   (pi only; installed through Homebrew, wiring it into pi is a manual step that `tack on tgrep`
@@ -85,21 +85,23 @@ doctor: 56 ok, 1 warn, 2 fail
 
 ## A local model in pi
 
-Name one local model in `~/.tack/tack.toml` and tack makes it pi's default and starts it:
+Name one local model in `~/.tack/tack.toml` and tack makes it pi's default and gives you a switch:
 
 ```toml
 [local_model]
 name = "Qwen3.8 Flash-Next · Avalon fast"
-up = ["/path/to/avalon-fast", "up"]   # starts the server and returns; safe when it is already up
+up = ["/path/to/avalon-fast", "up"]     # starts the server and returns; safe when it is already up
+down = ["/path/to/avalon-fast", "down"] # stops it (optional)
 base_url = "http://127.0.0.1:8080/v1"
-model = "qwen3.8-flash-next-avalon"   # the id the server answers with on /v1/models
+model = "qwen3.8-flash-next-avalon"     # the id the server answers with on /v1/models
 context = 131072
 ```
 
 `tack install` adds a `tack-local` provider to `~/.pi/agent/models.json` and makes it pi's default
 in `~/.pi/agent/settings.json` (other providers and settings stay; each file is copied to
-`~/.tack/backup/` before tack's first edit). `tack open` runs `up` in the background, logging to
-`~/.tack/local-model.log`, then starts T3 Code, whose pi provider uses that default.
+`~/.tack/backup/` before tack's first edit). It also puts **Local model: status / on / off** in
+T3 Code's scripts menu for every project. They run `tack model status|on|off`, which prints
+`● <name>: ON` or `○ <name>: OFF`. The model loads only when you switch it on.
 
 Without a `[local_model]`, set pi's model yourself. For LM Studio, add a provider with
 `"baseUrl": "http://127.0.0.1:1234/v1"` and the id `lms ls` prints, and set the model's context

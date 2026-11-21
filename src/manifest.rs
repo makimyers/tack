@@ -94,6 +94,9 @@ pub struct LocalModel {
     pub name: String,
     /// argv that starts the server and returns; safe to run when it is already up.
     pub up: Vec<String>,
+    /// argv that stops the server; empty = `tack model off` says it cannot.
+    #[serde(default)]
+    pub down: Vec<String>,
     /// OpenAI-compatible base URL, e.g. `http://127.0.0.1:8080/v1`.
     pub base_url: String,
     /// The id the server answers with on `/v1/models`.
@@ -249,6 +252,9 @@ impl Manifest {
             let mut e = |msg: &str| errs.push(format!("local_model {}: {msg}", lm.name));
             if lm.up.is_empty() || lm.up.iter().any(String::is_empty) {
                 e("up must be a non-empty argv");
+            }
+            if lm.down.iter().any(String::is_empty) {
+                e("down has an empty argument");
             }
             if !lm.base_url.starts_with("http://") && !lm.base_url.starts_with("https://") {
                 e("base_url must start with http:// or https://");
