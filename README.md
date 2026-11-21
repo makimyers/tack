@@ -159,10 +159,12 @@ to unwire them.
 
 ## Publish a release
 
-1. Push the repo to GitHub as `makidatacity/tack`.
-2. Tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
-3. The release workflow builds macOS (arm64) and Linux (x86_64, aarch64, static) binaries
-   with `SHA256SUMS` and attaches them to the release. The curl one-liner above then works.
+1. Build the binaries into `dist/`: `cargo build --release`, copy `target/release/tack` to
+   `dist/tack-macos-arm64`, run `scripts/build-linux.sh`, then write `dist/SHA256SUMS` with
+   `shasum -a 256`.
+2. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. Publish: `gh release create vX.Y.Z dist/tack-* dist/SHA256SUMS`. The curl one-liner above
+   always installs the latest release.
 
 ## Development
 
