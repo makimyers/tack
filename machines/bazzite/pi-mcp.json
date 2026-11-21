@@ -1,0 +1,42 @@
+{
+  "mcpServers": {
+    "godot-ai": {
+      "command": "/home/maki/.local/bin/uvx",
+      "args": [
+        "--isolated",
+        "--no-config",
+        "--no-env-file",
+        "--no-sources",
+        "--no-build",
+        "--index-strategy",
+        "first-index",
+        "--keyring-provider",
+        "disabled",
+        "--exclude-newer",
+        "2026-11-16T18:00:00Z",
+        "--exclude-newer-package",
+        "godot-ai=false",
+        "--python",
+        ">=3.11,<3.15",
+        "--index",
+        "https://pypi.org/simple",
+        "--default-index",
+        "https://pypi.org/simple",
+        "--find-links",
+        "https://pypi.org/simple/godot-ai/",
+        "--link-mode",
+        "copy",
+        "--from",
+        "godot-ai==4.4.2",
+        "godot-ai",
+        "attach",
+        "--port",
+        "8001",
+        "--ws-port",
+        "8002"
+      ],
+      "exposure": "deferred",
+      "description": "Godot AI: drives the open Godot editor (scenes, nodes, scripts, running and testing the game)"
+    }
+  }
+}

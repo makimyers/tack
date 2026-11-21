@@ -7,6 +7,9 @@ few token-saving tools can be switched on or off per agent.
 
 ## Install
 
+Maki's own desktop: `sh machines/bazzite/restore.sh` from a clone of this fork rebuilds the whole setup
+(see [machines/bazzite/README.md](machines/bazzite/README.md)).
+
 ```sh
 curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/makidatacity/tack/main/install.sh | sh
 ```
