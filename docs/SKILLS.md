@@ -43,7 +43,7 @@ from `gh repo view`, the epic label is `epic`, the Next file is `docs/roadmap/ne
 - Removed "never the page" (no page any more).
 
 **local-worker** (new in tack, 2026-11-21)
-- Claude writes a stand-alone brief, runs `pi -p --no-session --model tack-local/<id>`, then checks
+- Claude writes a stand-alone brief, runs `pi -p --no-session --no-mcp --model tack-local/<id>`, then checks
   `git diff` and the done-check itself. Tested: a two-function pytest task finished in 13 s on Avalon fast.
 
 **capture**

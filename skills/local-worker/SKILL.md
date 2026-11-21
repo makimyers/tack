@@ -28,8 +28,12 @@ of this conversation, so the brief must stand alone:
 From the project root, on a clean git tree (commit or stash first, so its diff is easy to read):
 
 ```
-pi -p --no-session --model tack-local/<model id> "<brief>"
+pi -p --no-session --no-mcp --model tack-local/<model id> "<brief>"
 ```
+
+`--no-mcp` keeps the worker lean and stops a hang: without it the first call in the 2026-11-21 test sat
+10 minutes with no output while pi waited on an MCP server. Drop it only when the task needs one
+(e.g. Godot AI for an editor task), and then give the call a `timeout 600`.
 
 `<model id>` is the `model` in tack's `[local_model]` (`tack model status` names it). A short task
 takes 10–60 s; run longer ones in the background with output to a log file, keep working, and read
