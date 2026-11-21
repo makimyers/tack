@@ -1,0 +1,28 @@
+[package]
+name = "tack"
+version = "0.1.0"
+edition = "2021"
+description = "One binary that installs and manages a T3 Code + pi + Claude Code setup"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "tack"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+include_dir = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+toml = "0.8"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true
+panic = "abort"

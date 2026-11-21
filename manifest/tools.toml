@@ -1,0 +1,140 @@
+# Sources and dates for every command: docs/TOOLS.md
+
+# --- base tools ---
+
+[[tool]]
+name = "pi"
+description = "pi coding agent (any model, local models too)"
+harnesses = []
+default = []
+base = true
+required = true
+check = ["pi", "--version"]
+min_version = "0.84.3"
+hint = "Sign in: run `pi`, then `/login`."
+manual = "curl -fsSL https://pi.dev/install.sh | sh"
+
+[[tool.install]]
+os = "any"
+needs = ["npm"]
+run = [["npm", "install", "-g", "--ignore-scripts", "@earendil-works/pi-coding-agent@1.6.0"]]
+
+[[tool]]
+name = "t3"
+description = "T3 Code, one window for every agent"
+harnesses = []
+default = []
+base = true
+required = true
+check = ["t3", "--version"]
+min_version = ""
+manual = "curl -fsSL https://t3.codes/install.sh | sh"
+
+[[tool.install]]
+os = "any"
+needs = ["npm"]
+run = [["npm", "install", "-g", "t3@0.1.11"]]
+
+[[tool]]
+name = "claude"
+description = "Claude Code (detected, never installed)"
+harnesses = []
+default = []
+base = true
+required = false
+check = ["claude", "--version"]
+min_version = ""
+hint = "Sign in: run `claude auth login`."
+manual = "install Claude Code from https://claude.com/product/claude-code, then run `claude auth login`"
+
+# --- toggles ---
+
+[[tool]]
+name = "rtk"
+description = "Shrinks command output before the model reads it"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+base = false
+required = false
+check = ["rtk", "--version"]
+min_version = ""
+hint = "If `rtk gain` says command not found, you have Rust Type Kit: `cargo uninstall rtk`, then `tack install`."
+manual = "https://github.com/rtk-ai/rtk/blob/master/docs/guide/getting-started/installation.md"
+
+[[tool.install]]
+os = "any"
+needs = ["brew"]
+run = [["brew", "install", "rtk"]]
+
+[[tool.install]]
+os = "any"
+needs = ["cargo"]
+run = [["cargo", "install", "--git", "https://github.com/rtk-ai/rtk", "--tag", "v1.2.1", "rtk"]]
+
+[tool.enable]
+claude = [["rtk", "init", "-g", "--auto-patch"]]
+pi = [["rtk", "init", "-g", "--agent", "pi", "--auto-patch"]]
+
+[tool.marker]
+pi = "extensions/rtk.ts"
+
+[tool.disable]
+claude = [["rtk", "init", "-g", "--uninstall"]]
+pi = [["rtk", "init", "--uninstall", "--agent", "pi", "--global"]]
+
+[[tool]]
+name = "tgrep"
+description = "Indexed grep for large codebases"
+harnesses = ["pi"]
+default = []
+base = false
+required = false
+check = ["tgrep", "--version"]
+min_version = ""
+hint = "pi wiring is manual: git clone --branch v1.2.8 https://github.com/microsoft/tgrep, then in it `./install-agent.sh install --agent pi --scope user` (undo: same with `uninstall`). Needs Python 3.11+."
+manual = "https://github.com/microsoft/tgrep/releases/tag/v1.2.8"
+
+[[tool.install]]
+os = "any"
+needs = ["brew"]
+run = [["brew", "install", "tgrep"]]
+
+[[tool]]
+name = "context-mode"
+description = "Keeps big tool output out of the context window"
+harnesses = ["claude", "pi"]
+default = []
+base = false
+required = false
+check = ["node", "--version"]
+min_version = "24.15.0"
+hint = ""
+manual = "upgrade Node.js to 24.15.0 or newer (https://nodejs.org), then `tack on context-mode`"
+
+[tool.enable]
+claude = [
+  ["claude", "plugin", "marketplace", "add", "mksglu/context-mode"],
+  ["claude", "plugin", "install", "context-mode@context-mode"],
+]
+pi = [["pi", "install", "npm:context-mode@2.2.1"]]
+
+[tool.disable]
+claude = [["claude", "plugin", "marketplace", "remove", "context-mode"]]
+pi = [["pi", "remove", "npm:context-mode@2.2.1"]]
+
+[[tool]]
+name = "skillevaluator"
+description = "Checks agent skills before you ship them"
+harnesses = ["claude", "pi"]
+default = []
+base = false
+required = false
+check = ["skillevaluator", "--version"]
+min_version = ""
+hint = ""
+manual = "pip install skillevaluator==1.0.1 (Python 3.12-3.14)"
+
+[[tool.install]]
+os = "any"
+needs = ["uv"]
+run = [["uv", "tool", "install", "--python", "3.13", "skillevaluator==1.0.1"]]

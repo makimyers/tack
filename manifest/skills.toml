@@ -1,0 +1,871 @@
+# Skill catalogue. Schema: docs/SPEC.md section 3.1. Provenance: docs/SKILLS.md.
+
+# Own skills, embedded from skills/
+
+[[skill]]
+name = "goal-loop"
+description = "Keeps working a task list until the checks pass"
+source = "own"
+path = "goal-loop"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "onboard"
+description = "Starts a session from git, epics and the last handoff"
+source = "own"
+path = "onboard"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "wrap"
+description = "Ends a session: ticks epics, updates memory, hands off"
+source = "own"
+path = "wrap"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "capture"
+description = "Parks a passing idea as one line on its epic"
+source = "own"
+path = "capture"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "breakdown"
+description = "Splits an epic into small tickets filed in waves"
+source = "own"
+path = "breakdown"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "multitree"
+description = "Turns a list of work into a plan and runs it"
+source = "own"
+path = "multitree"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "multitree-prompt"
+description = "Writes the loop prompt for an unattended worktree run"
+source = "own"
+path = "multitree-prompt"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "one-thing"
+description = "Keeps every reply to one thread, short"
+source = "own"
+path = "one-thing"
+rev = ""
+harnesses = ["claude"]
+default = ["claude"]
+group = ""
+
+[[skill]]
+name = "web-scrape"
+description = "Fetches hard web pages, cheapest tool first"
+source = "own"
+path = "web-scrape"
+rev = ""
+harnesses = ["claude", "pi"]
+default = []
+group = ""
+
+# obra/superpowers
+
+[[skill]]
+name = "brainstorming"
+description = "Shapes an idea into a design before building"
+source = "https://github.com/obra/superpowers"
+path = "skills/brainstorming"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "diagnosing-superpowers"
+description = "Works out why a superpowers session went wrong"
+source = "https://github.com/obra/superpowers"
+path = "skills/diagnosing-superpowers"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "dispatching-parallel-agents"
+description = "Runs independent tasks in parallel agents"
+source = "https://github.com/obra/superpowers"
+path = "skills/dispatching-parallel-agents"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "executing-plans"
+description = "Works through a written plan step by step"
+source = "https://github.com/obra/superpowers"
+path = "skills/executing-plans"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "finishing-a-development-branch"
+description = "Decides how to land a finished branch"
+source = "https://github.com/obra/superpowers"
+path = "skills/finishing-a-development-branch"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "receiving-code-review"
+description = "Weighs review feedback before acting on it"
+source = "https://github.com/obra/superpowers"
+path = "skills/receiving-code-review"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "requesting-code-review"
+description = "Asks for a review before calling work done"
+source = "https://github.com/obra/superpowers"
+path = "skills/requesting-code-review"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "subagent-driven-development"
+description = "Builds a plan task by task with subagents"
+source = "https://github.com/obra/superpowers"
+path = "skills/subagent-driven-development"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "systematic-debugging"
+description = "Finds a bug's root cause before fixing it"
+source = "https://github.com/obra/superpowers"
+path = "skills/systematic-debugging"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "test-driven-development"
+description = "Writes the failing test before the code"
+source = "https://github.com/obra/superpowers"
+path = "skills/test-driven-development"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "using-git-worktrees"
+description = "Sets up an isolated git worktree for new work"
+source = "https://github.com/obra/superpowers"
+path = "skills/using-git-worktrees"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "using-superpowers"
+description = "Loads the right skill before each reply"
+source = "https://github.com/obra/superpowers"
+path = "skills/using-superpowers"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "verification-before-completion"
+description = "Runs the checks before claiming done"
+source = "https://github.com/obra/superpowers"
+path = "skills/verification-before-completion"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "writing-plans"
+description = "Turns a spec into a step-by-step plan"
+source = "https://github.com/obra/superpowers"
+path = "skills/writing-plans"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+[[skill]]
+name = "writing-skills"
+description = "Writes and tests new skills"
+source = "https://github.com/obra/superpowers"
+path = "skills/writing-skills"
+rev = "22f0b463e7a5e579904dd6211a520321035526f7"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "superpowers"
+
+# mattpocock/skills
+
+[[skill]]
+name = "ask-matt"
+description = "Points you at the right skill for the job"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/ask-matt"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "code-review"
+description = "Reviews changes against standards and intent"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/code-review"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "codebase-design"
+description = "Vocabulary for designing deep modules"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/codebase-design"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "diagnosing-bugs"
+description = "Diagnosis loop for hard bugs and slowdowns"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/diagnosing-bugs"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "domain-modeling"
+description = "Builds the domain glossary and ADRs"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/domain-modeling"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "grill-with-docs"
+description = "Interview that sharpens a plan and writes docs"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/grill-with-docs"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "implement-spec"
+description = "Builds what /to-spec and /to-tickets planned"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/implement-spec"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "implement"
+description = "Builds a piece of work from a spec or tickets"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/implement"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "improve-codebase-architecture"
+description = "Finds module-deepening chances in a codebase"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/improve-codebase-architecture"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "pr"
+description = "Writes a pull request body"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/pr"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "prototype"
+description = "Builds a throwaway prototype to answer a question"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/prototype"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "research"
+description = "Researches a question from primary sources"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/research"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "retro"
+description = "Runs a retrospective on a coding session"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/retro"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "setup-matt-pocock-skills"
+description = "Sets a repo up for the mattpocock skills"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/setup-matt-pocock-skills"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "tdd"
+description = "Builds features test-first, red-green-refactor"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/tdd"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "to-spec"
+description = "Turns the conversation into a spec issue"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/to-spec"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "to-tickets"
+description = "Splits a plan into tracer-bullet tickets"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/to-tickets"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "triage"
+description = "Moves issues through triage to agent-ready briefs"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/triage"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "wayfinder"
+description = "Maps a huge job as decision tickets"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/wayfinder"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "wizard"
+description = "Writes a bash wizard for steps only a human can do"
+source = "https://github.com/mattpocock/skills"
+path = "skills/engineering/wizard"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "chief-of-staff"
+description = "Pursues a long goal by coordinating subagents"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/chief-of-staff"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "claude-handoff"
+description = "Hands the conversation to a background agent"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/claude-handoff"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "loop-me"
+description = "Interview about workflows you want to build"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/loop-me"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "setup-ts-deep-modules"
+description = "Enforces deep modules in a TypeScript repo"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/setup-ts-deep-modules"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "software-factory"
+description = "Vocabulary for designing a software factory"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/software-factory"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "writing-beats"
+description = "Arranges raw material into a journey of beats"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/writing-beats"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "writing-fragments"
+description = "Mines raw writing fragments"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/writing-fragments"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "writing-shape"
+description = "Shapes raw material into an article"
+source = "https://github.com/mattpocock/skills"
+path = "skills/in-progress/writing-shape"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "git-guardrails-claude-code"
+description = "Adds Claude Code hooks that block risky git"
+source = "https://github.com/mattpocock/skills"
+path = "skills/misc/git-guardrails-claude-code"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "migrate-to-shoehorn"
+description = "Moves test casts to @total-typescript/shoehorn"
+source = "https://github.com/mattpocock/skills"
+path = "skills/misc/migrate-to-shoehorn"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "scaffold-exercises"
+description = "Scaffolds course exercise folders"
+source = "https://github.com/mattpocock/skills"
+path = "skills/misc/scaffold-exercises"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "setup-pre-commit"
+description = "Sets up Husky pre-commit hooks"
+source = "https://github.com/mattpocock/skills"
+path = "skills/misc/setup-pre-commit"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "grill-me"
+description = "Interview that sharpens a plan"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/grill-me"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "grilling"
+description = "Stress-tests a plan or idea by questioning"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/grilling"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "handoff"
+description = "Compacts the conversation into a handoff doc"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/handoff"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = "mattpocock"
+
+[[skill]]
+name = "teach"
+description = "Teaches a new skill or concept"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/teach"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "to-questionnaire"
+description = "Turns an open decision into a questionnaire"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/to-questionnaire"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "wait-what"
+description = "Re-pitches a message that did not land"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/wait-what"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+[[skill]]
+name = "writing-for-agents"
+description = "Writes docs and skills for agents"
+source = "https://github.com/mattpocock/skills"
+path = "skills/productivity/writing-for-agents"
+rev = "abeeaf95660ba9e8b7c753eb38f441ca707a8823"
+harnesses = ["claude", "pi"]
+default = []
+group = "mattpocock"
+
+# Single-skill repos
+
+[[skill]]
+name = "i-have-adhd"
+description = "Shapes replies for a reader with ADHD"
+source = "https://github.com/ayghri/i-have-adhd"
+path = "skills/i-have-adhd"
+rev = "1ecea1993b7fce257ffbd686c070948b5e07eda6"
+harnesses = ["claude", "pi"]
+default = ["claude", "pi"]
+group = ""
+
+[[skill]]
+name = "security-audit"
+description = "Security review of a codebase or service"
+source = "https://github.com/cloudflare/security-audit-skill"
+path = "skills/security-audit"
+rev = "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8"
+harnesses = ["claude"]
+default = ["claude"]
+group = ""
+
+[[skill]]
+name = "impeccable"
+description = "Designs, critiques and polishes frontend UI"
+source = "https://github.com/pbakaus/impeccable"
+path = ".claude/skills/impeccable"
+rev = "b49177d32788f2dc585c42831d845dacf1ebed2c"
+harnesses = ["claude", "pi"]
+default = []
+group = ""
+
+# Bank: off everywhere until `tack on <name>`. Provenance: docs/SKILLS.md, Bank.
+
+[[skill]]
+name = "chat-table"
+description = "Shows status and comparisons as one small table"
+source = "own"
+path = "chat-table"
+rev = ""
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "design-md"
+description = "Drops a brand-inspired DESIGN.md into a project"
+source = "own"
+path = "design-md"
+rev = ""
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "machine-cleanup"
+description = "Finds big files and frees disk space safely"
+source = "own"
+path = "machine-cleanup"
+rev = ""
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "podcast-me"
+description = "Turns dense material into a podcast script"
+source = "own"
+path = "podcast-me"
+rev = ""
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "speakit"
+description = "Reads the last reply aloud on a Mac"
+source = "own"
+path = "speakit"
+rev = ""
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "api-design"
+description = "REST API design: naming, status codes, paging"
+source = "https://github.com/affaan-m/ECC"
+path = "skills/api-design"
+rev = "b38be6a7f6350964d59328b52f0624e1d1d552d1"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "database-migrations"
+description = "Safe, reversible database schema changes"
+source = "https://github.com/affaan-m/ECC"
+path = "skills/database-migrations"
+rev = "b38be6a7f6350964d59328b52f0624e1d1d552d1"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "postgres-patterns"
+description = "PostgreSQL queries, indexes and schema design"
+source = "https://github.com/affaan-m/ECC"
+path = "skills/postgres-patterns"
+rev = "b38be6a7f6350964d59328b52f0624e1d1d552d1"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "python-patterns"
+description = "Idiomatic, typed Python code"
+source = "https://github.com/affaan-m/ECC"
+path = "skills/python-patterns"
+rev = "b38be6a7f6350964d59328b52f0624e1d1d552d1"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "python-testing"
+description = "Python tests with pytest, fixtures and mocks"
+source = "https://github.com/affaan-m/ECC"
+path = "skills/python-testing"
+rev = "b38be6a7f6350964d59328b52f0624e1d1d552d1"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "deprecation-and-migration"
+description = "Retires old code and moves users off it"
+source = "https://github.com/addyosmani/agent-skills"
+path = "skills/deprecation-and-migration"
+rev = "301b02b12bff98e4688e6984af6556802322bbde"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "observability-and-instrumentation"
+description = "Adds logs, metrics and traces worth having"
+source = "https://github.com/addyosmani/agent-skills"
+path = "skills/observability-and-instrumentation"
+rev = "301b02b12bff98e4688e6984af6556802322bbde"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "performance-optimization"
+description = "Measures, then fixes slow code and pages"
+source = "https://github.com/addyosmani/agent-skills"
+path = "skills/performance-optimization"
+rev = "301b02b12bff98e4688e6984af6556802322bbde"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "source-driven-development"
+description = "Checks official docs before writing code"
+source = "https://github.com/addyosmani/agent-skills"
+path = "skills/source-driven-development"
+rev = "301b02b12bff98e4688e6984af6556802322bbde"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "e2e"
+description = "Writes and runs end-to-end UI tests with e2e"
+source = "https://github.com/e2e-inc/e2e"
+path = "skills/e2e"
+rev = "a9c3de9f0ca5eca2e112ff596271c5fabad0f0e7"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "create-verification-skill"
+description = "Builds a verify-<app> skill on top of e2e"
+source = "https://github.com/e2e-inc/e2e"
+path = "skills/create-verification-skill"
+rev = "a9c3de9f0ca5eca2e112ff596271c5fabad0f0e7"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "reverse-engineer-anything"
+description = "Reverse engineers binaries and packaged apps"
+source = "https://github.com/morluto/rea"
+path = ".agents/skills/reverse-engineer-anything"
+rev = "a56f7bb668ab23fec8d33f7af353ac7ed2fe1895"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "ui-ux-pro-max"
+description = "UI/UX rules, palettes and font pairings"
+source = "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill"
+path = ".claude/skills/ui-ux-pro-max"
+rev = "dd9a1b4cf9f67ca2e326f646d93e101b2778db30"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "modern-web-guidance"
+description = "Current web platform features and practices"
+source = "https://github.com/GoogleChrome/modern-web-guidance"
+path = "skills/modern-web-guidance"
+rev = "4dd968349e54ca45a05dd5c818fb035c9054b022"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"
+
+[[skill]]
+name = "chrome-extensions"
+description = "Builds Chrome extensions on Manifest V3"
+source = "https://github.com/GoogleChrome/modern-web-guidance"
+path = "skills/chrome-extensions"
+rev = "4dd968349e54ca45a05dd5c818fb035c9054b022"
+harnesses = ["claude", "pi"]
+default = []
+group = "bank"

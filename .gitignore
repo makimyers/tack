@@ -1,0 +1,7 @@
+/target
+/.worktrees
+/dist
+*.log
+# internal working notes, kept out of the public repo
+/briefs
+/docs/HANDOFF.md

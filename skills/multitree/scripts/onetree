@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+# onetree "task" - run an agent on a task in a throwaway git worktree, squash the result back
+# onto the current branch as ONE commit, push it, clean up.
+#
+# Env:
+#   ONETREE_AGENT="cmd args"  agent CLI to run instead of `claude`; the task is appended as the last
+#                             argument (e.g. "opencode run", "codex exec", "aider --yes --message")
+#   ONETREE_MODEL=opus        claude only: model (default opus)
+#   ONETREE_EFFORT=high       claude only: reasoning effort (default high)
+#   ONETREE_NO_PUSH=1         land locally, never push
+#   ONETREE_BRANCH=name       branch name instead of a random one
+#   ONETREE_NO_LAND=1         do not squash-merge or clean up; leave branch + worktree for a caller
+#   ONETREE_PORT=8101         exported as PORT inside the worktree (parallel runs need distinct ports)
+set -euo pipefail
+
+task="${1:?usage: onetree \"task description\"}"
+root=$(git rev-parse --show-toplevel)
+base=$(git -C "$root" rev-parse --abbrev-ref HEAD)
+branch="${ONETREE_BRANCH:-onetree-$(openssl rand -hex 4)}"
+dir="$root/.worktrees/$branch"
+lock="$root/.git/onetree-land.lock"
+guard="$root/.git/onetree-guard-$branch.json"
+landed=""
+held=""
+
+# Landing mutates the root index, so only one run may land at a time. macOS has no
+# flock(1); mkdir is atomic on every filesystem we care about. A lock whose owner pid
+# is gone is stale and gets stolen.
+lock_acquire() {
+  local waited=0 owner
+  until mkdir "$lock" 2>/dev/null; do
+    owner=$(cat "$lock/pid" 2>/dev/null || echo "")
+    if [ -n "$owner" ] && ! kill -0 "$owner" 2>/dev/null; then
+      echo "onetree: stealing stale land lock from dead pid $owner"
+      rm -rf "$lock"
+      continue
+    fi
+    sleep 2
+    waited=$((waited + 2))
+    if [ "$waited" -ge 900 ]; then
+      echo "onetree: land lock held for 15min, giving up. work kept on $branch at $dir" >&2
+      return 1
+    fi
+  done
+  echo $$ >"$lock/pid"
+  held=1
+}
+
+lock_release() {
+  [ -n "$held" ] || return 0
+  held=""
+  rm -rf "$lock"
+}
+
+# The trunk is pushed after every land. Pushing main usually deploys production, which
+# should be a human decision, so a main checkout lands locally and stops there.
+push_trunk() {
+  [ -z "${ONETREE_NO_PUSH:-}" ] || { echo "onetree: ONETREE_NO_PUSH set, landed locally only"; return 0; }
+  if [ "$(git -C "$root" rev-parse --abbrev-ref HEAD)" = "main" ]; then
+    echo "onetree: on main, refusing to push (pushing main is human-only). landed locally only." >&2
+    exit 1
+  fi
+  if ! git -C "$root" rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
+    printf 'onetree: %s has no upstream, not pushing. to push: git -C %q push -u origin %q\n' "$base" "$root" "$base"
+    return 0
+  fi
+  if git -C "$root" fetch -q origin && git -C "$root" push -q origin HEAD; then
+    echo "onetree: pushed $base to origin"
+  else
+    printf 'onetree: push failed, nothing else touched. run: git -C %q push origin %q\n' "$root" "$base" >&2
+    exit 1
+  fi
+}
+
+land() {
+  rm -f "$guard"
+  [ -z "$landed" ] && [ -d "$dir" ] || return 0
+  landed=1
+
+  git -C "$dir" add -A
+  # A disciplined agent commits everything and leaves a clean tree, so "no staged
+  # changes" alone must not mean "no work" - count commits since base too. If the
+  # count cannot be read, err on the side of keeping the branch.
+  new_commits=$(git -C "$dir" rev-list --count "$base..HEAD" 2>/dev/null || echo 1)
+  if git -C "$dir" diff --cached --quiet && [ "$new_commits" = "0" ]; then
+    echo "onetree: no changes, discarding $branch"
+    git -C "$root" worktree remove --force "$dir"
+    git -C "$root" branch -D "$branch" >/dev/null
+    return 0
+  fi
+  if ! git -C "$dir" diff --cached --quiet; then
+    git -C "$dir" commit -qm "wip: $task"
+  fi
+
+  if [ -n "${ONETREE_NO_LAND:-}" ]; then
+    echo "onetree: ONETREE_NO_LAND set. work committed on $branch at $dir (caller lands it)"
+    return 0
+  fi
+
+  lock_acquire || return 0
+  trap 'lock_release' EXIT
+
+  if [ "$(git -C "$root" rev-parse --abbrev-ref HEAD)" != "$base" ]; then
+    echo "onetree: $root is no longer on $base. work kept on $branch at $dir"
+    lock_release
+    return 0
+  fi
+  # merge --squash refuses to run against a dirty tree, which is the usual reason a
+  # run appears to "finish" and land nothing. Say so instead of failing silently.
+  if ! git -C "$root" diff --quiet || ! git -C "$root" diff --cached --quiet; then
+    echo "onetree: $root has uncommitted changes, cannot squash-merge."
+    echo "onetree: commit or stash in $root, then: git merge --squash $branch && git commit -m \"$task\""
+    echo "onetree: work kept on $branch at $dir"
+    lock_release
+    return 0
+  fi
+
+  squashed=""
+  if git -C "$root" merge --squash "$branch" >/dev/null && git -C "$root" commit -qm "$task"; then
+    git -C "$root" worktree remove --force "$dir"
+    git -C "$root" branch -D "$branch" >/dev/null
+    echo "onetree: squashed into $base, worktree removed"
+    squashed=1
+  else
+    git -C "$root" reset --merge 2>/dev/null || true  # merge --abort is a no-op after --squash
+    echo "onetree: merge failed. work kept on $branch at $dir"
+  fi
+  lock_release
+  # After the release: push_trunk may exit, and an exit inside this trap skips lock_release.
+  [ -z "$squashed" ] || push_trunk
+}
+
+# Worktrees live inside the repo; keep them out of `git status` without touching .gitignore.
+grep -qxF '/.worktrees/' "$root/.git/info/exclude" 2>/dev/null || echo '/.worktrees/' >>"$root/.git/info/exclude"
+
+git -C "$root" worktree add -b "$branch" "$dir" HEAD >/dev/null
+# node_modules is gitignored, so a fresh worktree has none. Symlink it rather than
+# installing: the gates need it and an install per worktree is minutes of nothing.
+if [ -d "$root/node_modules" ] && [ ! -e "$dir/node_modules" ]; then
+  ln -s "$root/node_modules" "$dir/node_modules"
+fi
+trap land EXIT
+echo "onetree: $branch -> $dir (base: $base)"
+
+[ -n "${ONETREE_PORT:-}" ] && export PORT="$ONETREE_PORT"
+
+set -m   # own process group: Ctrl+C hits the agent, not this script
+if [ -n "${ONETREE_AGENT:-}" ]; then
+  echo "onetree: agent '$ONETREE_AGENT' - no sandbox guard; only your agent's own permissions apply" >&2
+  # shellcheck disable=SC2086 # word-splitting the agent command is the point
+  (cd "$dir" && $ONETREE_AGENT "$task") || true
+else
+  # The guard, enforced by Claude Code rather than asked for in the prompt. dontAsk refuses
+  # anything not allowed here instead of prompting, so the loop never waits. Deny beats any
+  # allow from any settings file. Bash runs in an OS sandbox with no network that can write only
+  # the worktree, node_modules and .git (Claude Code adds .git for a worktree, minus hooks and
+  # config), and never local main or this file. gh runs outside it, so only the gh subcommands
+  # allowed here work. The file lives outside the worktree, so `git add -A` never lands it.
+  cat >"$guard" <<EOF
+{
+  "permissions": {
+    "allow": [
+      "Edit(/$dir/**)", "Write(/$dir/**)", "WebSearch", "WebFetch",
+      "Bash(gh issue view *)", "Bash(gh issue list*)", "Bash(gh issue comment *)",
+      "Bash(gh issue close *)", "Bash(gh issue edit *)", "Bash(gh issue create *)"
+    ],
+    "deny": [
+      "Bash(git push*)", "Bash(git merge *)", "Bash(git rebase*)", "Bash(git commit*--amend*)",
+      "Bash(gh issue delete*)", "Bash(gh repo*)", "Bash(gh pr*)", "Bash(gh workflow*)",
+      "Bash(gh release*)", "Bash(gh secret*)", "Bash(gh api*)", "mcp__*"
+    ]
+  },
+  "sandbox": {
+    "enabled": true, "failIfUnavailable": true, "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false, "excludedCommands": ["gh *"],
+    "filesystem": {
+      "allowWrite": ["$root/node_modules"],
+      "denyWrite": ["$guard", "$root/.git/refs/heads/main", "$root/.git/packed-refs"]
+    },
+    "network": { "allowedDomains": [], "strictAllowlist": true }
+  }
+}
+EOF
+  # No terminal (output goes to a file): headless -p, or the TUI waits for input forever.
+  print=""
+  [ -t 1 ] || print="-p"
+  (cd "$dir" && claude $print \
+    --model "${ONETREE_MODEL:-opus}" --effort "${ONETREE_EFFORT:-high}" \
+    --permission-mode dontAsk --settings "$guard" "$task") || true
+fi
+set +m
