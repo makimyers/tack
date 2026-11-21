@@ -43,8 +43,9 @@ from `gh repo view`, the epic label is `epic`, the Next file is `docs/roadmap/ne
 - Removed "never the page" (no page any more).
 
 **local-worker** (new in tack, 2026-11-21)
-- Claude writes a stand-alone brief, runs `pi -p --no-session --no-mcp --model tack-local/<id>`, then checks
-  `git diff` and the done-check itself. Tested: a two-function pytest task finished in 13 s on Avalon fast.
+- Claude writes a stand-alone brief, runs `pi -p --no-session --no-mcp --model tack-local/<id> < /dev/null`, then checks
+  `git diff` and the done-check itself. Tested: a two-function pytest task finished in 13 s on Avalon fast;
+  the Orb Drift Three.js test took 5 tasks, 6 Qwen runs and about 3 minutes of Qwen time.
 
 **capture**
 - `R` from `gh repo view`; `roadmap-status` replaced by the epic listing (the old no-config fallback
