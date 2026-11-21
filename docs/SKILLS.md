@@ -1,10 +1,12 @@
 # Skills: where they came from
 
-The catalogue is `manifest/skills.toml` (schema: `docs/SPEC.md` 3.1). 87 entries:
+The catalogue is `manifest/skills.toml` (schema: `docs/SPEC.md` 3.1). 149 entries:
 
 | Group / source | Entries | On by default |
 |---|---|---|
 | own (`skills/`) | 10 | 7 both harnesses; `one-thing` and `local-worker` Claude only; `web-scrape` off |
+| `games` (own: game-studio, adventure-level-design, playcap-review; from Ultimate Harness) | 3 | all, Claude Code only |
+| `godot` (jame581/GodotPrompter, MIT, pinned 426e8ab) | 59 | 27 for a 3D Godot 4.7 game, Claude Code only; the rest (C#, mobile, multiplayer, XR, web, 2D, named addons) off |
 | `bank` (own and third-party, see Bank below) | 20 | none |
 | `superpowers` (obra/superpowers) | 15 | all, Claude Code only (`tack on superpowers --pi` for pi) |
 | `mattpocock` (mattpocock/skills) | 39 | 8, both harnesses (`grill-me`, `grilling`, `to-spec`, `to-tickets`, `triage`, `domain-modeling`, `handoff`, `setup-matt-pocock-skills`); 31 listed, off |

@@ -68,8 +68,11 @@ doctor: 56 ok, 1 warn, 2 fail
 
 - Both agents: `guard`, `rules`, `goal-loop`, `onboard`, `wrap`, `capture`, `breakdown`,
   `multitree`, `i-have-adhd`, the default members of the `mattpocock` group, `rtk`.
-- Claude Code only: `one-thing`, `security-audit`, `local-worker` (hands tasks to the local model), the `superpowers` group (it adds
-  about 1,200 prompt tokens in pi; `tack on superpowers --pi` turns it on there).
+- Claude Code only: `one-thing`, `security-audit`, `local-worker` (hands tasks to the local model),
+  the `superpowers` group (it adds about 1,200 prompt tokens in pi; `tack on superpowers --pi` turns
+  it on there), the `games` group (game-studio, adventure-level-design, playcap-review) and 27 of the
+  59 `godot` skills (GodotPrompter: GDScript, scenes, physics, cameras, shaders, testing...; the C#,
+  mobile, multiplayer, XR, web, 2D and named-addon ones stay off until `tack on <name>`).
 - Off until you turn them on: `context-mode`, `web-scrape`, `impeccable`, `skillevaluator`, `tgrep`
   (pi only; installed through Homebrew, wiring it into pi is a manual step that `tack on tgrep`
   prints).

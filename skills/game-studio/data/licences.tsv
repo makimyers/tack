@@ -1,0 +1,19 @@
+generator	version	licence	class	conditions	source	checked
+Qwen-Image	2.1	Qwen Research Licence	deny	non-commercial	https://github.com/QwenLM/Qwen-Image-2.1	2026-11-02
+Sony Woosh		CC-BY-NC	deny	outputs non-commercial	docs/research/2026-11-02-gamedev-studio-research.md	2026-11-02
+Fish S2-Pro		Fish Audio research licence	deny	non-commercial	docs/research/2026-11-02-gamedev-studio-research.md	2026-11-02
+Hunyuan3D	2.1	Tencent Hunyuan Community	deny	not licensed in the UK, EU or South Korea	docs/research/2026-11-02-gamedev-studio-research.md	2026-11-02
+MiniMax Music	3	MiniMax terms of service	deny	until its terms are shown to be a plain commercial licence	docs/research/2026-11-02-gamedev-studio-research.md	2026-11-02
+MiniMax	H3	MiniMax terms of service	deny	until its terms are shown to be a plain commercial licence	docs/research/2026-11-02-gamedev-studio-research.md	2026-11-02
+Stable Audio 3 Small-SFX		Stability AI Community	conditional	free only while annual revenue is under US$1M; AI-content disclosure on Steam	https://github.com/vl3c/local-sounds	2026-11-02
+Fish Audio Drama	3	FACL v1.0	conditional	under US$500k trailing revenue (90-day transition); visible "Built with Fish Audio" credit; pre-rendered VO only (runtime TTS may be a Hosted Service)	Fish Audio blog 13 Oct 2026	2026-11-02
+Pixal3D		MIT + DINOv3 licence	conditional	DINOv3 licence unread: read it before shipping a Pixal3D asset	https://github.com/Bingeljell/image-to-3dlab	2026-11-02
+Qwen-Image	2512	Apache-2.0	allow		https://github.com/QwenLM/Qwen-Image	2026-11-02
+Qwen-Image-Edit	2511	Apache-2.0	allow		https://github.com/QwenLM/Qwen-Image	2026-11-02
+ACE-Step	1.5	MIT	allow		https://github.com/ace-step	2026-11-02
+MOSS-SoundEffect	2.0	Apache-2.0	allow	secondary source: confirm its model card before the first shipped sound	docs/research/2026-11-02-gamedev-studio-research.md	2026-11-02
+CC0		CC0 1.0	allow		https://creativecommons.org/publicdomain/zero/1.0/	2026-11-02
+MIT		MIT	allow		https://opensource.org/license/mit	2026-11-02
+Apache-2.0		Apache-2.0	allow		https://www.apache.org/licenses/LICENSE-2.0	2026-11-02
+OFL		SIL Open Font License 1.1	allow		https://openfontlicense.org	2026-11-02
+original		Original work	allow	made by the game's own team or its own code, no generator	-	2026-11-02
