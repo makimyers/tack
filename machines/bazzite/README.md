@@ -17,6 +17,17 @@ steps (ROCm SDK, Avalon build, 90 GiB of weights, Godot AI's one-click connect).
 | `tack.desktop` | `~/.local/share/applications/` | the **Tack** app-menu item (`tack open` in a Konsole window) |
 | `pi-mcp.json` | `~/.pi/agent/mcp.json` | Godot AI for pi, loaded only when a task searches for it |
 
+## Daily use
+
+1. Click **Tack** in the app menu. T3 Code opens in the browser; the Konsole window keeps it running.
+2. Local model: at the top right of a project chat, the **Local model: status** button and its ▾ arrow
+   (**on** / **off**). It prints `● ON` or `○ OFF`. On takes about 20 s and the whole GPU; switch it
+   off when you game.
+3. Pick the agent per chat: **Claude** (your subscription) or **pi** (the local model, free).
+   To have Claude lead and the local model build, say "use the local model" (the `local-worker` skill).
+4. Godot: open `game-brilliant/game` in Godot first; then Claude or pi can work in the editor (Godot AI).
+5. Change skills or tools only through tack: `tack`, `tack on <name>`, `tack off <name>`, `tack doctor`.
+
 ## What lives where
 
 | Thing | Repo (github.com/makimyers) | Notes |
