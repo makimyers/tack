@@ -62,8 +62,13 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
-    /// Start the local model (if set) and T3 Code
+    /// Start T3 Code
     Open,
+    /// Switch the local model on or off, or show whether it runs
+    Model {
+        #[arg(value_parser = ["on", "off", "status"], default_value = "status")]
+        action: String,
+    },
     /// Remove everything tack created (pi, T3 Code and Claude Code stay)
     Uninstall,
     #[command(hide = true)]
@@ -115,6 +120,7 @@ fn dispatch(paths: &Paths, cmd: Option<Cmd>) -> Result<i32> {
         Some(Cmd::Off(t)) => toggle(paths, t, false),
         Some(Cmd::Doctor { json }) => doctor_cmd(paths, json),
         Some(Cmd::Open) => open(paths),
+        Some(Cmd::Model { action }) => model_cmd(paths, &action),
         Some(Cmd::Uninstall) => uninstall(paths),
         Some(Cmd::Guard { harness }) => Ok(guard_cmd(&harness)),
     }
@@ -194,6 +200,11 @@ fn install(paths: &Paths, skip_tools: bool) -> Result<i32> {
     if let Some(lm) = &m.local_model {
         match local::wire_pi(paths, lm) {
             Ok(true) => println!("pi: default model {} ({})", lm.name, lm.base_url),
+            Ok(false) => {}
+            Err(e) => println!("warn: {e:#}"),
+        }
+        match local::wire_t3(paths) {
+            Ok(true) => println!("t3: Local model on / off / status in the scripts menu"),
             Ok(false) => {}
             Err(e) => println!("warn: {e:#}"),
         }
@@ -517,10 +528,8 @@ fn doctor_cmd(paths: &Paths, json: bool) -> Result<i32> {
 
 fn open(paths: &Paths) -> Result<i32> {
     if let Some(lm) = manifest::load(paths)?.local_model {
-        let log = tilde(&paths.home, &paths.tack.join("local-model.log"));
-        match local::start(paths, &lm) {
-            Ok(()) => println!("starting {} in the background (log: {log})", lm.name),
-            Err(e) => println!("warn: {} did not start: {e:#}", lm.name),
+        if local::running(&lm) == Some(false) {
+            println!("{} is off; switch it on from T3 Code's scripts menu (Local model: on) or `tack model on`", lm.name);
         }
     }
     match Command::new("t3").status() {
@@ -531,6 +540,34 @@ fn open(paths: &Paths) -> Result<i32> {
             Ok(1)
         }
     }
+}
+
+fn model_cmd(paths: &Paths, action: &str) -> Result<i32> {
+    let Some(lm) = manifest::load(paths)?.local_model else {
+        println!(
+            "no local model set; add [local_model] to {}",
+            tilde(&paths.home, &paths.user_manifest())
+        );
+        return Ok(1);
+    };
+    let ok = match action {
+        "on" => local::run(&lm.up)?,
+        "off" if lm.down.is_empty() => {
+            println!(
+                "[local_model] has no `down` command, so tack cannot stop {}",
+                lm.name
+            );
+            return Ok(1);
+        }
+        "off" => local::run(&lm.down)?,
+        _ => true,
+    };
+    match local::running(&lm) {
+        Some(true) => println!("● {}: ON ({})", lm.name, lm.base_url),
+        Some(false) => println!("○ {}: OFF", lm.name),
+        None => println!("? {}: cannot check {}", lm.name, lm.base_url),
+    }
+    Ok(!ok as i32)
 }
 
 fn uninstall(paths: &Paths) -> Result<i32> {

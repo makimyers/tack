@@ -3,6 +3,46 @@
 # Own skills, embedded from skills/
 
 [[skill]]
+name = "local-worker"
+description = "Claude hands set tasks to the local model, then checks them"
+source = "own"
+path = "local-worker"
+rev = ""
+harnesses = ["claude"]
+default = ["claude"]
+group = ""
+
+[[skill]]
+name = "game-studio"
+description = "Game folder jobs: tickets, verify gates, Godot kit, licences"
+source = "own"
+path = "game-studio"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "games"
+
+[[skill]]
+name = "adventure-level-design"
+description = "Level-design lens for climbing and exploration games"
+source = "own"
+path = "adventure-level-design"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "games"
+
+[[skill]]
+name = "playcap-review"
+description = "Reviews a Playcap playtest's remarks and screenshots"
+source = "own"
+path = "playcap-review"
+rev = ""
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "games"
+
+[[skill]]
 name = "goal-loop"
 description = "Keeps working a task list until the checks pass"
 source = "own"
@@ -869,3 +909,595 @@ rev = "4dd968349e54ca45a05dd5c818fb035c9054b022"
 harnesses = ["claude", "pi"]
 default = []
 group = "bank"
+
+# --- godot: GodotPrompter (jame581/GodotPrompter, MIT), Godot 4.x skills; 27 on for Claude ---
+[[skill]]
+name = "2d-essentials"
+description = "Godot: TileMaps, parallax scrolling, 2D lights and shadows"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/2d-essentials"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "3d-essentials"
+description = "Godot: materials, lighting, shadows, environment, global"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/3d-essentials"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "ability-system"
+description = "Godot: abilities with cost/cooldown, buffs/debuffs, stat"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/ability-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "addon-development"
+description = "Godot: EditorPlugin, @tool scripts, custom inspectors, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/addon-development"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "ai-navigation"
+description = "Godot: NavigationAgent2D/3D, steering behaviors, behavior"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/ai-navigation"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "animation-system"
+description = "Godot: AnimationPlayer, AnimationTree, blend trees, state"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/animation-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "assets-pipeline"
+description = "Godot: image compression, 3D scene import, audio formats"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/assets-pipeline"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "audio-system"
+description = "Godot: audio buses, AudioStreamPlayer, spatial audio, music"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/audio-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "beehave"
+description = "Godot: pure-GDScript behavior trees with composites"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/beehave"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "camera-system"
+description = "Godot: smooth follow, screen shake, camera zones, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/camera-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "component-system"
+description = "Godot: composition patterns, component communication, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/component-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "csharp-godot"
+description = "Godot: conventions, GodotSharp API differences from"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/csharp-godot"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "csharp-signals"
+description = "Godot: [Signal] delegates, EmitSignal patterns, and async"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/csharp-signals"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "dedicated-server"
+description = "Godot: headless export, server architecture, lobby"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/dedicated-server"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "dependency-injection"
+description = "Godot: autoloads, service locators, @export injection, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/dependency-injection"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "dialogue-manager"
+description = "Godot: .dialogue files with cues, responses, conditions and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/dialogue-manager"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "dialogue-system"
+description = "Godot: branching data, conditions, and UI presentation"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/dialogue-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "event-bus"
+description = "Godot: a global EventBus autoload with typed signals"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/event-bus"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "export-pipeline"
+description = "Godot: export presets, platform settings, CI/CD with GitHub"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/export-pipeline"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "gdextension"
+description = "Godot: godot-cpp (C++) or gdext (Rust), binding classes"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/gdextension"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "gdscript-advanced"
+description = "Godot: performance idioms, metaprogramming, @tool"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/gdscript-advanced"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "gdscript-patterns"
+description = "Godot: static typing, await/coroutines, lambdas, match"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/gdscript-patterns"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "godot-brainstorming"
+description = "Godot: scene tree, node choice, and architecture decisions"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-brainstorming"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "godot-code-review"
+description = "Godot: checklist of best practices, common anti-patterns"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-code-review"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "godot-debugging"
+description = "Godot: remote debugger, print techniques, signal tracing"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-debugging"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "godot-grill"
+description = "Godot: asks them in batched rounds, each with a recommended"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-grill"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "godot-mentor"
+description = "Godot: teaching mode that explains the concept, the editor"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-mentor"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "godot-optimization"
+description = "Godot: profiler, draw calls, physics tuning, memory"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-optimization"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "godot-project-setup"
+description = "Godot: scaffolds recommended directory structure, project"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-project-setup"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "godot-testing"
+description = "Godot: TDD workflow with GUT and gdUnit4, covers both"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-testing"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "godot-ui"
+description = "Godot: Control nodes, themes, anchors, containers, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/godot-ui"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "hud-system"
+description = "Godot: health bars, score displays, minimap, notifications"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/hud-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "input-handling"
+description = "Godot: InputEvent system, Input Map actions"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/input-handling"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "inventory-system"
+description = "Godot: Resource-based items, slots, stacking, and UI binding"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/inventory-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "limboai"
+description = "Godot: behavior trees and hierarchical state machines (C++"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/limboai"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "localization"
+description = "Godot: TranslationServer, CSV/PO translation files, locale"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/localization"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "math-essentials"
+description = "Godot: vectors, transforms, interpolation, curves, random"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/math-essentials"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "mobile-development"
+description = "Godot: export and signing, permissions, plugins, in-app"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/mobile-development"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "multiplayer-basics"
+description = "Godot: MultiplayerAPI, ENet/WebSocket peers, RPCs, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/multiplayer-basics"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "multiplayer-sync"
+description = "Godot: MultiplayerSynchronizer, interpolation, prediction"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/multiplayer-sync"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "multithreading"
+description = "Godot: WorkerThreadPool, Thread/Mutex/Semaphore"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/multithreading"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "particles-vfx"
+description = "Godot: GPUParticles2D/3D, ParticleProcessMaterial, emission"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/particles-vfx"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "phantom-camera"
+description = "Godot: PhantomCamera2D/3D with priority-based switching"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/phantom-camera"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "physics-system"
+description = "Godot: Use when working with physics bodies, collision"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/physics-system"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "player-controller"
+description = "Godot: CharacterBody2D/3D patterns, movement physics, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/player-controller"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "popochiu"
+description = "Godot: point-and-click adventure framework with rooms"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/popochiu"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "procedural-generation"
+description = "Godot: noise-based terrain, BSP dungeons, cellular automata"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/procedural-generation"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "rendering-pipeline"
+description = "Godot: renderer per platform, lighting strategy and light"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/rendering-pipeline"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "resource-pattern"
+description = "Godot: custom Resources for configuration, items, stats"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/resource-pattern"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "responsive-ui"
+description = "Godot: stretch modes, aspect ratios, DPI scaling, and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/responsive-ui"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "save-load"
+description = "Godot: ConfigFile, JSON, Resource serialization, and save"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/save-load"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "scene-organization"
+description = "Godot: composition vs inheritance, when to split scenes"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/scene-organization"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "shader-basics"
+description = "Godot: Godot shader language, visual shaders, common visual"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/shader-basics"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "state-machine"
+description = "Godot: enum, node, and resource-based FSM patterns with"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/state-machine"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "tween-animation"
+description = "Godot: property animation, method tweening, chaining"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/tween-animation"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "using-godot-prompter"
+description = "Godot: establishes how to find and use GodotPrompter"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/using-godot-prompter"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = ["claude"]
+group = "godot"
+
+[[skill]]
+name = "web-export"
+description = "Godot: Web export preset options, threads vs no-threads and"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/web-export"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "web-services"
+description = "Godot: HTTPRequest, downloads, REST/JSON APIs, auth"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/web-services"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
+[[skill]]
+name = "xr-development"
+description = "Godot: OpenXR setup, XROrigin3D, hand tracking"
+source = "https://github.com/jame581/GodotPrompter"
+path = "skills/xr-development"
+rev = "426e8ab597473d1c71a11a04f6f0f2e1182a8e39"
+harnesses = ["claude", "pi"]
+default = []
+group = "godot"
+
