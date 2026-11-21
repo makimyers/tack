@@ -3,6 +3,7 @@ mod components;
 mod doctor;
 mod guard;
 mod link;
+mod local;
 mod manifest;
 mod paths;
 mod pi;
@@ -61,7 +62,7 @@ enum Cmd {
         #[arg(long)]
         json: bool,
     },
-    /// Start T3 Code
+    /// Start the local model (if set) and T3 Code
     Open,
     /// Remove everything tack created (pi, T3 Code and Claude Code stay)
     Uninstall,
@@ -113,7 +114,7 @@ fn dispatch(paths: &Paths, cmd: Option<Cmd>) -> Result<i32> {
         Some(Cmd::On(t)) => toggle(paths, t, true),
         Some(Cmd::Off(t)) => toggle(paths, t, false),
         Some(Cmd::Doctor { json }) => doctor_cmd(paths, json),
-        Some(Cmd::Open) => open(),
+        Some(Cmd::Open) => open(paths),
         Some(Cmd::Uninstall) => uninstall(paths),
         Some(Cmd::Guard { harness }) => Ok(guard_cmd(&harness)),
     }
@@ -189,6 +190,13 @@ fn install(paths: &Paths, skip_tools: bool) -> Result<i32> {
         }
         Ok(_) => {}
         Err(e) => println!("warn: {e:#}"),
+    }
+    if let Some(lm) = &m.local_model {
+        match local::wire_pi(paths, lm) {
+            Ok(true) => println!("pi: default model {} ({})", lm.name, lm.base_url),
+            Ok(false) => {}
+            Err(e) => println!("warn: {e:#}"),
+        }
     }
 
     store::write_own(paths)?;
@@ -507,7 +515,14 @@ fn doctor_cmd(paths: &Paths, json: bool) -> Result<i32> {
     Ok(failed as i32)
 }
 
-fn open() -> Result<i32> {
+fn open(paths: &Paths) -> Result<i32> {
+    if let Some(lm) = manifest::load(paths)?.local_model {
+        let log = tilde(&paths.home, &paths.tack.join("local-model.log"));
+        match local::start(paths, &lm) {
+            Ok(()) => println!("starting {} in the background (log: {log})", lm.name),
+            Err(e) => println!("warn: {} did not start: {e:#}", lm.name),
+        }
+    }
     match Command::new("t3").status() {
         Ok(s) => Ok(s.code().unwrap_or(1)),
         Err(_) => {

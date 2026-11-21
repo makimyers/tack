@@ -85,30 +85,26 @@ doctor: 56 ok, 1 warn, 2 fail
 
 ## A local model in pi
 
-tack does not choose pi's model. For a model served by LM Studio, put this in
-`~/.pi/agent/models.json` (use the id that `lms ls` prints):
+Name one local model in `~/.tack/tack.toml` and tack makes it pi's default and starts it:
 
-```json
-{
-  "providers": {
-    "lmstudio": {
-      "baseUrl": "http://127.0.0.1:1234/v1",
-      "api": "openai-completions",
-      "apiKey": "lm-studio",
-      "models": [{ "id": "<model id>", "contextWindow": 65536 }]
-    }
-  }
-}
+```toml
+[local_model]
+name = "Qwen3.8 Flash-Next · Avalon fast"
+up = ["/path/to/avalon-fast", "up"]   # starts the server and returns; safe when it is already up
+base_url = "http://127.0.0.1:8080/v1"
+model = "qwen3.8-flash-next-avalon"   # the id the server answers with on /v1/models
+context = 131072
 ```
 
-and make it the default in `~/.pi/agent/settings.json`:
-`{"defaultProvider": "lmstudio", "defaultModel": "<model id>"}`. T3 Code's pi provider uses that
-default.
+`tack install` adds a `tack-local` provider to `~/.pi/agent/models.json` and makes it pi's default
+in `~/.pi/agent/settings.json` (other providers and settings stay; each file is copied to
+`~/.tack/backup/` before tack's first edit). `tack open` runs `up` in the background, logging to
+`~/.tack/local-model.log`, then starts T3 Code, whose pi provider uses that default.
 
-Set the model's default context length in LM Studio (My Models, the gear beside the model) to at
-least 32,000. Loaded on demand with LM Studio's own default (8,192 seen), a coding session runs out
-of room after a few steps. With tack's defaults pi sends about 3,000 tokens before your first
-message.
+Without a `[local_model]`, set pi's model yourself. For LM Studio, add a provider with
+`"baseUrl": "http://127.0.0.1:1234/v1"` and the id `lms ls` prints, and set the model's context
+length in LM Studio to at least 32,000: LM Studio's own default (8,192 seen) runs out after a few
+steps. With tack's defaults pi sends about 3,000 tokens before your first message.
 
 ## How toggling works
 

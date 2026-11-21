@@ -133,6 +133,9 @@ pub fn run(paths: &Paths, m: &Manifest, state: &State) -> Vec<Check> {
     });
     let local = paths.local_bin().join("tack");
     out.push(link_check(paths, "tack link", &local, |t| t == bin));
+    if let Some(lm) = &m.local_model {
+        out.push(local_model_check(paths, lm));
+    }
 
     for c in components::all(m) {
         for &h in &c.harnesses {
@@ -245,4 +248,34 @@ pub fn print(checks: &[Check]) {
         count(Status::Warn),
         count(Status::Fail)
     );
+}
+
+fn local_model_check(paths: &Paths, lm: &manifest::LocalModel) -> Check {
+    let name = "local model";
+    let user = tilde(&paths.home, &paths.user_manifest());
+    let prog = Path::new(&lm.up[0]);
+    if prog.is_absolute() && !prog.is_file()
+        || !prog.is_absolute() && run::which(&lm.up[0]).is_none()
+    {
+        return check(
+            Status::Fail,
+            name,
+            format!("{} is missing", lm.up[0]),
+            format!("fix `up` in {user}"),
+        );
+    }
+    let settings = claude::read(&paths.config_dir(Harness::Pi).join("settings.json"));
+    let default = settings.ok().flatten().is_some_and(|s| {
+        s["defaultProvider"] == crate::local::PROVIDER && s["defaultModel"] == lm.model.as_str()
+    });
+    if default {
+        ok(name, format!("{} is pi's default", lm.name))
+    } else {
+        check(
+            Status::Warn,
+            name,
+            format!("pi's default model is not {}", lm.name),
+            "tack install".into(),
+        )
+    }
 }
