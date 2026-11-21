@@ -82,6 +82,24 @@ pub struct Manifest {
     pub skill: Vec<Skill>,
     #[serde(default)]
     pub tool: Vec<Tool>,
+    /// The one local model pi uses; set in `$TACK_HOME/tack.toml`, never in the shipped catalogue.
+    #[serde(default)]
+    pub local_model: Option<LocalModel>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct LocalModel {
+    /// Shown in pi's model picker and in tack's output.
+    pub name: String,
+    /// argv that starts the server and returns; safe to run when it is already up.
+    pub up: Vec<String>,
+    /// OpenAI-compatible base URL, e.g. `http://127.0.0.1:8080/v1`.
+    pub base_url: String,
+    /// The id the server answers with on `/v1/models`.
+    pub model: String,
+    /// Context window the server is started with.
+    pub context: u64,
 }
 
 /// Embedded catalogue (or `$TACK_MANIFEST`, which tests use to replace it), then `$TACK_HOME/tack.toml`
@@ -121,6 +139,9 @@ impl Manifest {
         for t in other.tool {
             self.drop_name(&t.name);
             self.tool.push(t);
+        }
+        if other.local_model.is_some() {
+            self.local_model = other.local_model;
         }
     }
 
@@ -222,6 +243,18 @@ impl Manifest {
                     "skill {}: group {:?} clashes with a component name",
                     s.name, s.group
                 ));
+            }
+        }
+        if let Some(lm) = &self.local_model {
+            let mut e = |msg: &str| errs.push(format!("local_model {}: {msg}", lm.name));
+            if lm.up.is_empty() || lm.up.iter().any(String::is_empty) {
+                e("up must be a non-empty argv");
+            }
+            if !lm.base_url.starts_with("http://") && !lm.base_url.starts_with("https://") {
+                e("base_url must start with http:// or https://");
+            }
+            if lm.model.is_empty() || lm.context == 0 {
+                e("model must be set and context above 0");
             }
         }
         if !errs.is_empty() {
@@ -394,5 +427,24 @@ mod tests {
         assert!(m.skill.is_empty());
         assert_eq!(m.tool.len(), 2);
         m.validate().unwrap();
+    }
+
+    const LOCAL: &str = "[local_model]\nname = \"Q\"\nup = [\"/bin/true\"]\nbase_url = \"http://127.0.0.1:8080/v1\"\nmodel = \"q\"\ncontext = 131072\n";
+
+    #[test]
+    fn local_model_comes_from_the_user_file_and_is_checked() {
+        assert!(embedded().unwrap().local_model.is_none());
+        let mut m = parse(OK);
+        m.merge(parse(LOCAL));
+        assert_eq!(m.local_model.as_ref().unwrap().context, 131072);
+        m.validate().unwrap();
+        m.merge(parse(
+            &LOCAL
+                .replace("http://", "ftp://")
+                .replace("[\"/bin/true\"]", "[]"),
+        ));
+        let err = m.validate().unwrap_err().to_string();
+        assert!(err.contains("up must be a non-empty argv"), "{err}");
+        assert!(err.contains("base_url must start with http"), "{err}");
     }
 }

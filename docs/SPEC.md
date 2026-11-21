@@ -10,8 +10,8 @@ Linux (x86_64, aarch64). Intel Macs are not supported: T3 Code ships no runtime 
 Owner's goals, in order: one command to install; trivially easy to run and manage; lean (nothing
 always-on that a small local model must read unless it earns its place); safe to re-run.
 
-Non-goals for v1: Windows, Codex/dsh/OpenCode wiring, a TUI or desktop app, model/provider
-configuration (the owner sets pi's models himself), owning CLAUDE.md / AGENTS.md beyond the
+Non-goals for v1: Windows, Codex/dsh/OpenCode wiring, a TUI or desktop app, choosing models for
+the owner (tack only wires the one `[local_model]` the owner names, see 3.5), owning CLAUDE.md / AGENTS.md beyond the
 `rules` block (see 3).
 
 ## 1. Commands
@@ -24,7 +24,7 @@ configuration (the owner sets pi's models himself), owning CLAUDE.md / AGENTS.md
 | `tack on <name>... [--claude] [--pi]` | Turn a component or a whole group on. No flag = every harness the component supports. |
 | `tack off <name>... [--claude] [--pi]` | Reverse of `on`. A tool's disable steps run only if tack wired it; otherwise only the state flips. |
 | `tack doctor [--json]` | Checks prerequisites, base tools, links, hook, extension. Each failure prints the cause and one `fix:` line. Exit 1 if any check fails. |
-| `tack open` | Starts T3 Code (`t3`). |
+| `tack open` | Runs the `[local_model]` `up` command in the background (output in `$TACK_HOME/local-model.log`), then starts T3 Code (`t3`). |
 | `tack uninstall` | Refuses (exit 2) unless `$TACK_HOME` holds `bin/tack` or `state.toml`. Runs no tool `disable` steps: prints one line naming the tools still wired and `tack off <names>` to unwire them first. Then removes every link, the Claude hook and the pi extension that tack created, and `$TACK_HOME`. Never uninstalls pi, T3 Code, Claude Code or other tools; prints that they stay. |
 | `tack guard --harness <claude\|pi>` | Hidden. Hook entry point: reads one tool call as JSON on stdin, exits 0 (allow) or 2 (deny, reason on stderr). |
 
@@ -180,6 +180,16 @@ Claude Code only, on: `one-thing`, `security-audit`, the `superpowers` group (pi
 `tack on superpowers --pi`).
 Off until toggled: `context-mode`, `web-scrape`, `impeccable`, `skillevaluator`, `tgrep`.
 Base tools: `pi` (required, ≥ 0.84.3), `t3` (required), `claude` (detect only).
+
+### 3.5 `[local_model]`
+
+Only in `$TACK_HOME/tack.toml`; the shipped catalogue has none. Fields: `name`, `up` (argv that
+starts the server and returns, safe to re-run), `base_url` (http or https), `model` (the server's
+model id), `context`. `install` writes provider `tack-local` into `~/.pi/agent/models.json` and
+`defaultProvider` / `defaultModel` into `~/.pi/agent/settings.json`, keeping every other key, after
+copying each file to `$TACK_HOME/backup/pi-<file>` once. A file that is not a JSON object is left
+alone with a warning. `doctor` fails when `up`'s program is missing and warns when pi's default is
+not this model.
 
 ## 4. Guard
 
