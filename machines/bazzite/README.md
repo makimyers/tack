@@ -13,7 +13,7 @@ steps (ROCm SDK, Avalon build, 90 GiB of weights, Godot AI's one-click connect).
 
 | File | Goes to | What |
 |---|---|---|
-| `tack.toml` | `~/.tack/tack.toml` | the one local model: Qwen3.8 Flash-Next, Avalon fast (128K context, port 8080) |
+| `tack.toml` | `~/.tack/tack.toml` | the one local model: Qwen3.8 Flash-Next, Avalon long (256K context, port 8080) |
 | `tack.desktop` | `~/.local/share/applications/` | the **Tack** app-menu item (`tack open` in a Konsole window) |
 | `pi-mcp.json` | `~/.pi/agent/mcp.json` | Godot AI for pi, loaded only when a task searches for it |
 
@@ -33,7 +33,7 @@ steps (ROCm SDK, Avalon build, 90 GiB of weights, Godot AI's one-click connect).
 | Thing | Repo (github.com/makimyers) | Notes |
 |---|---|---|
 | Skills, guard, rules, T3 Code + pi + Claude Code wiring, local model switch | `tack` | the authority; change things here, then `tack install` |
-| Avalon fast (the local model server) | `fork-avalon` (`local/`) | `local/avalon-fast up|down|status` |
+| Avalon long (the local model server, 256K) | `fork-avalon` (`local/`) | `local/avalon-long up|down|status` |
 | ROCm SDK the Avalon build links | `fork-strata` (`.venv`, made by `setup.sh`) | also Strata's own models |
 | Model Deck (test bench for other models) | `tool-model-deck` | tray app, autostarts |
 | game-studio CLI and Godot verify kit | `tool-claude-setup` | used by the `game-studio` skill |

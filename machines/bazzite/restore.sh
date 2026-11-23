@@ -22,7 +22,7 @@ done
 # 2. tack itself: skills, guard, rules, pi, T3 Code, rtk.
 (cd "$P/tack" && ./install.sh)
 
-# 3. This machine's local model (Avalon fast), then tack wires pi and T3 Code's buttons to it.
+# 3. This machine's local model (Avalon long, 256K), then tack wires pi and T3 Code's buttons to it.
 cp "$here/tack.toml" "$HOME/.tack/tack.toml"
 tack install
 
