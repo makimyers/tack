@@ -1,7 +1,7 @@
 # This machine's own tack settings, layered on top of the shipped catalogue.
 
 # The one local model pi uses. `tack install` makes it pi's default; `tack open`T3 Code's scripts menu switches it (Local model: on / off / status).
-# Qwen3.8 Flash-Next, Avalon long: 256K context, 3 speculative draft tokens (fork-avalon).
+# Qwen3.8 Flash-Next, Avalon long: 256K context, up to 4 speculative draft tokens (fork-avalon, 2026-11-24).
 [local_model]
 name = "Qwen3.8 Flash-Next · Avalon 256K"
 up = ["/var/home/maki/Projects/fork-avalon/local/avalon-long", "up"]
