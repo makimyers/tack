@@ -15,6 +15,7 @@ steps (ROCm SDK, Avalon build, 90 GiB of weights, Godot AI's one-click connect).
 |---|---|---|
 | `tack.toml` | `~/.tack/tack.toml` | the one local model: Qwen3.8 Flash-Next, Avalon long (256K context, port 8080) |
 | `tack.desktop` | `~/.local/share/applications/` | the **Tack** app-menu item (`tack open` in a Konsole window) |
+| `t3-fork.sh` | `~/.t3/runtime/versions/0.1.11-maki.1/` + global `t3` | builds and installs the T3 Code fork (stock npm `t3` lacks its changes) |
 | `pi-mcp.json` | `~/.pi/agent/mcp.json` | Godot AI for pi, loaded only when a task searches for it |
 
 ## Daily use
@@ -33,6 +34,7 @@ steps (ROCm SDK, Avalon build, 90 GiB of weights, Godot AI's one-click connect).
 | Thing | Repo (github.com/makimyers) | Notes |
 |---|---|---|
 | Skills, guard, rules, T3 Code + pi + Claude Code wiring, local model switch | `tack` | the authority; change things here, then `tack install` |
+| T3 Code fork (pi model name, reply speed in tok/s) | `t3code` (clone: `~/Projects/fork-t3code`) | `sh machines/bazzite/t3-fork.sh` builds and installs it |
 | Avalon long (the local model server, 256K) | `fork-avalon` (`local/`) | `local/avalon-long up|down|status` |
 | ROCm SDK the Avalon build links | `fork-strata` (`.venv`, made by `setup.sh`) | also Strata's own models |
 | Model Deck (test bench for other models) | `tool-model-deck` | tray app, autostarts |

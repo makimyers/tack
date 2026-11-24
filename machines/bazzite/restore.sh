@@ -49,5 +49,6 @@ Done with the quick part. Still to do by hand (slow or needs you):
        --local-dir ~/Avalon-models/Qwen3.8-Flash-Next-Avalon-GGUF --exclude '*.jpg'
   5. Godot 4.7.2 (Flathub org.godotengine.Godot), open game-brilliant/game, then in the Godot AI
      panel press Configure next to Claude Code.
-  6. Check:  tack doctor  &&  tack model on  &&  tack model status
+  6. T3 Code fork (pi model name, reply speed; ~5 min): sh ~/Projects/tack/machines/bazzite/t3-fork.sh
+  7. Check:  tack doctor  &&  tack model on  &&  tack model status
 EOF
