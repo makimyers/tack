@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::process::Command;
 
 use serde::Serialize;
 
@@ -136,6 +137,10 @@ pub fn run(paths: &Paths, m: &Manifest, state: &State) -> Vec<Check> {
     if let Some(lm) = &m.local_model {
         out.push(local_model_check(paths, lm));
     }
+    let dependency_script = paths.tack.join("bin/check-dependencies");
+    if dependency_script.symlink_metadata().is_ok() {
+        check_dependencies(&dependency_script, &mut out);
+    }
 
     for c in components::all(m) {
         for &h in &c.harnesses {
@@ -226,6 +231,48 @@ fn link_check(paths: &Paths, name: &str, link: &Path, good: impl Fn(&Path) -> bo
 
 pub fn failed(checks: &[Check]) -> bool {
     checks.iter().any(|c| c.status == Status::Fail)
+}
+
+fn check_dependencies(script: &Path, checks: &mut Vec<Check>) {
+    let start = checks.len();
+    let fix = "see machines/bazzite/README.md in the Tack checkout";
+    match Command::new(script).arg("check").output() {
+        Ok(output) => {
+            for line in String::from_utf8_lossy(&output.stdout).lines() {
+                let mut fields = line.splitn(3, '\t');
+                match (fields.next(), fields.next(), fields.next()) {
+                    (Some("ok"), Some(name), Some(detail)) => checks.push(ok(name, detail.into())),
+                    (Some("fail"), Some(name), Some(detail)) => {
+                        checks.push(check(Status::Fail, name, detail.into(), fix.into()));
+                    }
+                    _ => checks.push(check(
+                        Status::Fail,
+                        "dependency lock",
+                        format!("unexpected checker output: {line}"),
+                        fix.into(),
+                    )),
+                }
+            }
+            if checks.len() == start || !output.status.success() && !failed(&checks[start..]) {
+                checks.push(check(
+                    Status::Fail,
+                    "dependency lock",
+                    format!(
+                        "checker returned {}: {}",
+                        output.status,
+                        String::from_utf8_lossy(&output.stderr).trim()
+                    ),
+                    fix.into(),
+                ));
+            }
+        }
+        Err(error) => checks.push(check(
+            Status::Fail,
+            "dependency lock",
+            format!("could not run checker: {error}"),
+            fix.into(),
+        )),
+    }
 }
 
 /// Prints every check that is not ok, with its fix, then a count line.

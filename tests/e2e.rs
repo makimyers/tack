@@ -296,6 +296,51 @@ fn row<'a>(list: &'a str, name: &str) -> Option<Vec<&'a str>> {
 }
 
 #[test]
+fn open_prefers_installed_t3_without_telemetry_or_the_bazzite_banner() {
+    let env = Env::new();
+    let local_bin = env.home.join(".local/bin");
+    fs::create_dir_all(&local_bin).unwrap();
+    shim(&env.shims, "t3", "exit 7");
+    shim(
+        &local_bin,
+        "t3",
+        r#"test "$T3CODE_TELEMETRY_ENABLED" = false && test "$USERMOTDSOURCED" = Y && test "${PATH%%:*}" = "$HOME/.local/bin""#,
+    );
+    env.ok(&["open"]);
+}
+
+#[test]
+fn doctor_reports_each_machine_dependency() {
+    let env = Env::new();
+    env.ok(&["install"]);
+    shim(
+        &env.home.join(".tack/bin"),
+        "check-dependencies",
+        r#"printf 'ok\tfork-example\tlocked\nfail\texample-runtime\tbuild missing\n'; exit 1"#,
+    );
+    let out = env.tack(&["doctor", "--json"]);
+    assert_eq!(out.status.code(), Some(1));
+    let report: serde_json::Value = serde_json::from_slice(&out.stdout).unwrap();
+    let entries = report["checks"].as_array().unwrap();
+    for (name, status) in [("fork-example", "ok"), ("example-runtime", "fail")] {
+        assert!(entries
+            .iter()
+            .any(|entry| entry["name"] == name && entry["status"] == status));
+    }
+}
+
+#[test]
+fn managed_open_refuses_an_unverified_t3() {
+    let env = Env::new();
+    let bin = env.home.join(".tack/bin");
+    fs::create_dir_all(&bin).unwrap();
+    shim(&bin, "check-dependencies", "exit 1");
+    let out = env.tack(&["open"]);
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("pinned T3 cannot start"));
+}
+
+#[test]
 fn install_links_defaults_and_second_run_changes_nothing() {
     let env = Env::new();
     env.ok(&["install"]);

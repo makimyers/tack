@@ -1,0 +1,8 @@
+# repo source-url commit expected-tree patch
+fork-t3code https://github.com/pingdotgg/t3code.git ca81b7b97a1c4b91e5ac25768d0f6629f37732fd eec5cf9c5683893f5dfc5343988924a441c4e97c patches/fork-t3code.patch
+fork-avalon git@github.com:makimyers/fork-avalon.git 41b6c7dc748dd3935723921e52818b6f22e5e259 - -
+fork-strata git@github.com:makimyers/fork-strata.git a77ab07b13c3ef35079365afc650a89ee59bf2ac - -
+tool-model-deck git@github.com:makimyers/tool-model-deck.git 8115aa54b04309678df0ce4374726c1507a21b63 b653f4d063233b15732b6ea4ccc0a55b60b19272 patches/tool-model-deck.patch
+tool-claude-setup git@github.com:makimyers/tool-claude-setup.git 4867c2ea718a109eab685be2f5108e6a60801f43 - -
+tool-multitree git@github.com:makimyers/tool-multitree.git ba0953b4b9ace9f3281c3cd044e7b472c7afe8df - -
+game-brilliant git@github.com:makimyers/game-brilliant.git 46d3dd3284b6a2dffd38d6778e048f9b81403dfd - -

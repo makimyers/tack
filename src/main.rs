@@ -203,11 +203,11 @@ fn install(paths: &Paths, skip_tools: bool) -> Result<i32> {
             Ok(false) => {}
             Err(e) => println!("warn: {e:#}"),
         }
-        match local::wire_t3(paths) {
-            Ok(true) => println!("t3: Local model on / off / status in the scripts menu"),
-            Ok(false) => {}
-            Err(e) => println!("warn: {e:#}"),
-        }
+    }
+    match local::wire_t3(paths, m.local_model.is_some()) {
+        Ok(true) => println!("t3: updated the scripts menu (Skills & tools)"),
+        Ok(false) => {}
+        Err(e) => println!("warn: {e:#}"),
     }
 
     store::write_own(paths)?;
@@ -479,6 +479,9 @@ fn list(paths: &Paths, all: bool, next: bool) -> Result<i32> {
             .collect::<Vec<_>>()
             .join(", ")
     );
+    println!("See individual skills: tack list --all");
+    println!("Change a skill or group: tack on <name> --pi  or  tack off <name> --pi");
+    println!("Use --claude for Claude Code. Open a new agent chat after changes.");
 
     if next {
         let step = if !paths.tack_bin().is_file() {
@@ -527,12 +530,39 @@ fn doctor_cmd(paths: &Paths, json: bool) -> Result<i32> {
 }
 
 fn open(paths: &Paths) -> Result<i32> {
+    let checker = paths.tack.join("bin/check-dependencies");
+    if checker.symlink_metadata().is_ok() {
+        let output = Command::new(checker)
+            .args(["check", "t3-runtime"])
+            .output()?;
+        if !output.status.success() {
+            let detail = String::from_utf8_lossy(&output.stdout);
+            let error = String::from_utf8_lossy(&output.stderr);
+            bail!("pinned T3 cannot start\n{detail}{error}  fix: run machines/bazzite/t3-fork.sh");
+        }
+    }
     if let Some(lm) = manifest::load(paths)?.local_model {
         if local::running(&lm) == Some(false) {
             println!("{} is off; switch it on from T3 Code's scripts menu (Local model: on) or `tack model on`", lm.name);
         }
     }
-    match Command::new("t3").status() {
+    let local_bin = paths.local_bin();
+    let local_t3 = local_bin.join("t3");
+    let t3 = if local_t3.is_file() {
+        local_t3.as_path()
+    } else {
+        Path::new("t3")
+    };
+    let path = std::env::var_os("PATH").unwrap_or_default();
+    let path =
+        std::env::join_paths(std::iter::once(local_bin).chain(std::env::split_paths(&path)))?;
+    match Command::new(t3)
+        .env("PATH", path)
+        .env("T3CODE_TELEMETRY_ENABLED", "false")
+        // Bazzite's welcome banner can consume input before the first shell prompt.
+        .env("USERMOTDSOURCED", "Y")
+        .status()
+    {
         Ok(s) => Ok(s.code().unwrap_or(1)),
         Err(_) => {
             eprintln!("tack: t3 (T3 Code) is not on PATH");

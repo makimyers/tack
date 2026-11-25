@@ -189,9 +189,11 @@ starts the server and returns, safe to re-run), `down` (optional argv that stops
 (http or https), `model` (the server's model id), `context`. `install` writes provider `tack-local`
 into `~/.pi/agent/models.json` and `defaultProvider` / `defaultModel` into
 `~/.pi/agent/settings.json`, keeping every other key, after copying each file to
-`$TACK_HOME/backup/pi-<file>` once. It also sets three entries in T3 Code's
-`defaultProjectScripts` (ids `tack-model-status|on|off`, replaced by id, the owner's scripts kept,
-backup `t3-settings.json`). A file that is not a JSON object is left alone with a warning. `doctor`
+`$TACK_HOME/backup/pi-<file>` once. If a local model is configured, `install` adds the three
+`tack-model-status|on|off` entries to T3 Code's `defaultProjectScripts`. It always adds
+`tack-skills-tools`, which runs `tack list` in the project terminal. Tack replaces its entries by
+ID, keeps the owner's scripts and backs up `t3-settings.json` once. A file that is not a JSON
+object is left alone with a warning. `doctor`
 fails when `up`'s program is missing and warns when pi's default is not this model.
 
 `tack model [status|on|off]` runs `up` / `down` in the terminal, then probes `base_url/models` for

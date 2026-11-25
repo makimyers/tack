@@ -1,0 +1,105 @@
+diff --git a/README.md b/README.md
+index 1548b03821dae535d5520298c09d3b2a028bfe94..abec3a8ad8346ca6a80fc22478b668b190aae569 100644
+--- a/README.md
++++ b/README.md
+@@ -42,6 +42,7 @@ and starts/stops/resets them without konsole windows.
+ | Qwen3.8 Flash-Next · Unsloth | model-deck-unsloth | fork-strata run-unsloth-ud-iq3_xxs.sh | systemctl stop | unsloth / qwen3.8-flash-next-unsloth-ud-iq3_xxs | 131072 |
+ | Qwen3.8 · Neo Coder (uncensored) | model-deck-neocoder | swh -m neocoder up | systemctl stop | neocoder / neocoder-27b | 131072 |
+ | Qwen3.8 · Swift 1.5 | model-deck-swift | swh up | systemctl stop | swift / swift-1.5-27b | 262144 |
++| Qwen3.8 · Ternary Bonsai 2.5 | model-deck-bonsai | llama.cpp b12631 (Vulkan, MTP) | systemctl stop (TERM) | bonsai / bonsai-2.5-27b | 65536 |
+ | Qwen3.5 · DeepSeek-V4-Pro distill, maths (uncensored) | model-deck-heretic | swh -m heretic up | systemctl stop | heretic / deepseek-v4-pro-heretic-9b | 262144 |
+ | Qwen3.5 · Defiant Fable, all-round (uncensored) | model-deck-defiant | swh -m defiant up | systemctl stop | defiant / defiant-fable-9b | 262144 |
+ | DeepSeek V4.1 Flash · Coder | model-deck-deepseek | fork-strata run-deepseek-v4.1-flash-ista-das-coder.sh | systemctl stop (KillSignal=SIGINT) | deepseek-local / deepseek-v4.1-flash | 131072 |
+@@ -85,6 +86,12 @@ have their own columns, so they stay out of the name.
+ 
+ A new model is a row in model_deck/core.py models(); a new harness a row in HARNESSES.
+ 
++**Bonsai 2.5** uses PrismML's `Q2_0-mtp` weights on the secondary drive (hover the row for
++the path). The text server uses the RX 7900 XTX, a 64K context, one slot, three MTP draft
++tokens and `xhigh` reasoning. Its built-in chat is at http://127.0.0.1:8080/ while it runs.
++On November 25 the Model Deck service read an 8,835-token Python prompt at 955 tokens/s and
++generated 256 tokens at 102 tokens/s. Total GPU use was about 11.6 GiB.
++
+ ## Tools tab (core.py tools())
+ 
+ One row per job: what it does (blurb), its live status in colour, and its own button -
+diff --git a/model_deck/core.py b/model_deck/core.py
+index cce04968c4dcc99277a642926bcdb7a98eb534ee..04687e77056f225c803465a09c7460f30e24a89e 100644
+--- a/model_deck/core.py
++++ b/model_deck/core.py
+@@ -50,6 +50,11 @@ def models() -> list[Model]:
+     h = Path.home()
+     run_media = "/run/media/system/Games/Strata-data/models"
+     avalon_url = "https://huggingface.co/freriadoc/Qwen3.8-Flash-Next-Avalon-GGUF"
++    bonsai_repo = "prism-ml/Ternary-Bonsai-2.5-27B-GGUF"
++    bonsai_path = ("/run/media/maki/a57bf000-7117-466e-bd15-4594a53a23d0/LLM-models/"
++                   f"{bonsai_repo}/Ternary-Bonsai-2.5-27B-Q2_0-mtp.gguf")
++    bonsai_id = "bonsai-2.5-27b"
++    bonsai_ctx = 65536
+     inkling_dir = h / ".lmstudio/models/ggml-org/Inkling-2-Mini-GGUF"
+     inkling_path = str(inkling_dir / "Inkling-2-Mini-IQ4_NL.gguf")
+     inkling_id = "inkling-2-mini"
+@@ -106,6 +111,19 @@ def models() -> list[Model]:
+                         "/Swift-1.5-Qwen3.8-27B-GSQ-RCO-IQ3_S-mtp.gguf"),
+               url="https://huggingface.co/ukisai/Swift-1.5-Qwen3.8-27B-GSQ-RCO-GGUF",
+               params="27B", released="2026-09-24"),
++        Model("bonsai", "Qwen3.8 · Ternary Bonsai 2.5", bonsai_ctx, "bonsai", bonsai_id,
++              str(h / ".local/opt/llama-b12631/llama-server"),
++              ("--model", bonsai_path, "--alias", bonsai_id, "--host", "127.0.0.1",
++               "--port", str(MODEL_PORT), "--device", "Vulkan0", "--n-gpu-layers", "all",
++               "--fit", "off", "--ctx-size", str(bonsai_ctx), "--parallel", "1",
++               "--batch-size", "2048", "--ubatch-size", "512", "--flash-attn", "on",
++               "--cache-type-k", "q8_0", "--cache-type-v", "q8_0", "--jinja",
++               "--spec-type", "draft-mtp", "--spec-draft-n-max", "3", "--spec-draft-p-min", "0.1",
++               "--reasoning-effort", "xhigh", "--temp", "1.0", "--top-p", "0.95",
++               "--top-k", "20", "--min-p", "0"),
++              str(h / ".dsh/bonsai.yml"), engine="llama.cpp", path=bonsai_path,
++              url=f"https://huggingface.co/{bonsai_repo}", params="27B",
++              released="2026-11-24", teams_off=True),
+         Model("heretic", "Qwen3.5 · DeepSeek-V4-Pro distill, maths (uncensored)", 262144, "heretic",
+               "deepseek-v4-pro-heretic-9b",
+               str(h / ".local/bin/swh"), ("-m", "heretic", "up"), str(h / ".dsh/heretic.yml"),
+@@ -491,7 +509,8 @@ def overlay_text(model: Model) -> str:
+     if model.teams_off:
+         text += "".join("- id: " + row + "\n  disabled: true\n"
+                         for row in ("tool-agent-team", "ui-agent-team", "agent-team"))
+-    if model.key.startswith("inkling"):
++    if model.provider in ("inkling", "bonsai"):
++        max_tokens, inputs = (16384, "text") if model.provider == "bonsai" else (8192, "text, image")
+         text += ("- id: llm-pi-ai\n  config:\n    providers:\n"
+                  f"      {model.provider}:\n"
+                  "        api: openai-completions\n"
+@@ -500,7 +519,7 @@ def overlay_text(model: Model) -> str:
+                  f"        defaultContextWindow: {model.ctx}\n"
+                  "        compat:\n          supportsDeveloperRole: false\n          maxTokensField: max_tokens\n"
+                  f"        models:\n          - id: {model.model_id}\n"
+-                 "            maxTokens: 8192\n            input: [text, image]\n")
++                 f"            maxTokens: {max_tokens}\n            input: [{inputs}]\n")
+     return text
+ 
+ 
+diff --git a/tests/test_core.py b/tests/test_core.py
+index b4add0096c5d94e96e656f4dcef5494d684e77d0..f6b6cd3244bb2a5f225f10b1c364c101aa2f0010 100644
+--- a/tests/test_core.py
++++ b/tests/test_core.py
+@@ -124,6 +124,20 @@ def test_inkling_launcher_and_dsh_route_agree():
+     assert core.Status(loaded=m).dsh_port == m.dsh_port == 3081
+ 
+ 
++def test_bonsai_launcher_and_dsh_use_the_same_text_model():
++    m = next(x for x in core.models() if x.key == "bonsai")
++    argv = core.build_start_argv(m)
++    assert argv[argv.index("--model") + 1] == m.path
++    assert argv[argv.index("--alias") + 1] == m.model_id
++    assert argv[argv.index("--ctx-size") + 1] == str(m.ctx)
++    assert argv[argv.index("--spec-type") + 1] == "draft-mtp"
++    overlay = core.overlay_text(m)
++    assert f"      {m.provider}:\n" in overlay
++    assert f"          - id: {m.model_id}\n" in overlay
++    assert f"        defaultContextWindow: {m.ctx}\n" in overlay
++    assert "            input: [text]\n" in overlay
++
++
+ def test_inkling_context_leaves_dsh_room_to_answer():
+     # pi-ai sends max_tokens = ctx - estimated prompt - 4096 safety. dsh's opening prompt
+     # estimates ~28.6K tokens; at 32K that left 37 tokens and the reply stopped on `length`.

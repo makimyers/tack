@@ -8,26 +8,45 @@ Fresh machine or after a crash: clone this repo to `~/Projects/tack`, then run
 sh ~/Projects/tack/machines/bazzite/restore.sh
 ```
 
-It clones the other repos, installs tack, puts this machine's settings in place and prints the slow
-steps (ROCm SDK, Avalon build, 90 GiB of weights, Godot AI's one-click connect).
+It restores missing Git checkouts, builds the pinned T3 fork and Tack, and applies this machine's
+Pi skill profile. Existing Git checkouts must match the lock. The restore reports drift so you can
+review it before changing a checkout. It preserves the installed `tack.toml`, the Pi MCP setup, and
+saved T3 threads. Sign-ins, the host ROCm/Avalon build, Godot setup, and large model downloads
+are still machine setup steps. The script prints their commands.
 
 | File | Goes to | What |
 |---|---|---|
+| `dependencies.lock` + `patches/` | `~/Projects/` | Exact source pins, with verified overlays for T3 and Bonsai in Model Deck |
+| `versions.env` + `avalon-weights.tsv` | Bazzite restore and `tack doctor` | Pinned T3, Node, pnpm, Pi, and Avalon weight revisions and checksums |
 | `tack.toml` | `~/.tack/tack.toml` | the one local model: Qwen3.8 Flash-Next, Avalon long (256K context, port 8080) |
 | `tack.desktop` | `~/.local/share/applications/` | the **Tack** app-menu item (`tack open` in a Konsole window) |
-| `t3-fork.sh` | `~/.t3/runtime/versions/0.1.11-maki.1/` + global `t3` | builds and installs the T3 Code fork (stock npm `t3` lacks its changes) |
+| `t3-fork.sh` | `~/.t3/runtime/versions/0.1.12-maki.1/` + global `t3` | builds and installs the T3 Code fork (stock npm `t3` lacks its changes) |
 | `pi-mcp.json` | `~/.pi/agent/mcp.json` | Godot AI for pi, loaded only when a task searches for it |
 
 ## Daily use
 
 1. Click **Tack** in the app menu. T3 Code opens in the browser; the Konsole window keeps it running.
+   Tack checks the installed fork against the lock, then starts it with product analytics and server
+   relay tracing off. The icon uses the current installed build. Run the restore after changing pins.
 2. Local model: at the top right of a project chat, the **Local model: status** button and its ▾ arrow
    (**on** / **off**). It prints `● ON` or `○ OFF`. On takes about 20 s and the whole GPU; switch it
    off when you game.
 3. Pick the agent per chat: **Claude** (your subscription) or **pi** (the local model, free).
    To have Claude lead and the local model build, say "use the local model" (the `local-worker` skill).
 4. Godot: open `game-brilliant/game` in Godot first; then Claude or pi can work in the editor (Godot AI).
-5. Change skills or tools only through tack: `tack`, `tack on <name>`, `tack off <name>`, `tack doctor`.
+5. Open **Scripts → Skills & tools** in a T3 project chat to see the list and change commands.
+   This machine enables Superpowers, Games, and the 27 curated Godot skills for Pi as well as Claude.
+
+## Verify and update
+
+- `tack doctor --json` shows each locked repo, the installed Pi and T3 builds, and the Avalon
+  engine and weights. The usual check compares weight sizes so it stays quick.
+- `sh machines/bazzite/dependencies.sh weights` checks SHA-256 for all Avalon weights, including
+  the draft head and vision projector.
+- Close Tack before rebuilding T3. For an intentional update, review the new revision, update
+  `dependencies.lock` and `versions.env`, and rerun `restore.sh`. For a patched repo, generate its
+  overlay with `git diff --binary --full-index <base-commit> HEAD` and record `HEAD^{tree}` as
+  the expected tree. Both overlays reconstruct from their remote base commits.
 
 ## What lives where
 

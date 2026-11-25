@@ -1,30 +1,33 @@
 #!/bin/sh
-# Rebuild Maki's Bazzite desktop setup (RX 7900 XTX) from GitHub. Safe to re-run: every step skips
-# what is already there. The slow and manual steps are printed at the end, not run.
-#   sh ~/Projects/tack/machines/bazzite/restore.sh
+# Restore Maki's Bazzite setup using the checked-in pins.
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
-# tack must be built from this repo: the upstream release binary lacks [local_model] and the T3 buttons.
-command -v cargo >/dev/null || { echo "install Rust first: curl https://sh.rustup.rs -sSf | sh"; exit 1; }
-P="$HOME/Projects"
-mkdir -p "$P"
+root=$(cd "$here/../.." && pwd)
+. "$here/versions.env"
+tack_home=${TACK_HOME:-$HOME/.tack}
+export PATH="$HOME/.local/bin:$PATH"
+command -v cargo >/dev/null || { echo "Install Rust before restoring Tack" >&2; exit 1; }
 
-# 1. The repos this setup uses (all on github.com/makimyers).
-for repo in tack fork-avalon fork-strata tool-model-deck tool-claude-setup tool-multitree game-brilliant; do
-  if [ -d "$P/$repo/.git" ]; then
-    echo "have $repo"
-  else
-    git clone "git@github.com:makimyers/$repo.git" "$P/$repo"
-  fi
-done
+sh "$here/dependencies.sh" sync
+sh "$here/t3-fork.sh"
 
-# 2. tack itself: skills, guard, rules, pi, T3 Code, rtk.
-(cd "$P/tack" && ./install.sh)
+if [ "$(pi --version 2>/dev/null || true)" != "$PI_VERSION" ] || [ ! -x "$HOME/.local/bin/pi" ]; then
+  npm install -g --prefix "$HOME/.local" --ignore-scripts --no-audit --no-fund "@earendil-works/pi-coding-agent@$PI_VERSION"
+fi
 
-# 3. This machine's local model (Avalon long, 256K), then tack wires pi and T3 Code's buttons to it.
-cp "$here/tack.toml" "$HOME/.tack/tack.toml"
-tack install
+mkdir -p "$tack_home"
+if [ ! -e "$tack_home/tack.toml" ]; then
+  cp "$here/tack.toml" "$tack_home/tack.toml"
+fi
+sh "$root/install.sh"
+ln -sfnT "$here/dependencies.sh" "$tack_home/bin/check-dependencies"
+tack on --pi superpowers games \
+  3d-essentials animation-system audio-system camera-system event-bus \
+  gdscript-advanced gdscript-patterns godot-brainstorming godot-code-review godot-debugging \
+  godot-optimization godot-testing godot-ui hud-system input-handling math-essentials \
+  particles-vfx physics-system player-controller rendering-pipeline resource-pattern \
+  save-load scene-organization shader-basics state-machine tween-animation using-godot-prompter
 
 # 4. The Tack app-menu launcher.
 mkdir -p "$HOME/.local/share/applications"
@@ -35,20 +38,21 @@ command -v kbuildsycoca6 >/dev/null && kbuildsycoca6 >/dev/null 2>&1 || true
 if [ -f "$HOME/.pi/agent/mcp.json" ]; then
   echo "kept ~/.pi/agent/mcp.json (compare with $here/pi-mcp.json)"
 else
+  mkdir -p "$HOME/.pi/agent"
   cp "$here/pi-mcp.json" "$HOME/.pi/agent/mcp.json"
 fi
 
-cat <<'EOF'
+cat <<EOF
 
-Done with the quick part. Still to do by hand (slow or needs you):
-  1. Claude Code: install it from https://claude.com/product/claude-code, then `claude auth login`.
-  2. ROCm SDK for the Avalon build:  cd ~/Projects/fork-strata && sh setup.sh
-  3. Build Avalon (10-20 min):       ~/Projects/fork-avalon/local/build.sh
-  4. Avalon weights (~90 GiB):
-     uvx --from 'huggingface_hub[hf_xet]' hf download freriadoc/Qwen3.8-Flash-Next-Avalon-GGUF \
-       --local-dir ~/Avalon-models/Qwen3.8-Flash-Next-Avalon-GGUF --exclude '*.jpg'
-  5. Godot 4.7.2 (Flathub org.godotengine.Godot), open game-brilliant/game, then in the Godot AI
-     panel press Configure next to Claude Code.
-  6. T3 Code fork (pi model name, reply speed; ~5 min): sh ~/Projects/tack/machines/bazzite/t3-fork.sh
-  7. Check:  tack doctor  &&  tack model on  &&  tack model status
+If the machine is fresh, finish the host and model setup:
+  1. Install and sign in to Claude Code if you use it.
+  2. Build the ROCm SDK and Avalon if tack doctor flags them:
+     cd ~/Projects/fork-strata && sh setup.sh
+     ~/Projects/fork-avalon/local/build.sh
+  3. Download the pinned Avalon weights if tack doctor flags them (~90 GiB):
+     uvx --from 'huggingface_hub[hf_xet]' hf download $AVALON_MODEL --revision $AVALON_REVISION --local-dir ~/Avalon-models/Qwen3.8-Flash-Next-Avalon-GGUF --include '*.gguf'
+     uvx --from 'huggingface_hub[hf_xet]' hf download $AVALON_PROJECTOR mmproj-Qwen3.8-Flash-Next-BF16.gguf --revision $AVALON_PROJECTOR_REVISION --local-dir ~/Avalon-models/Qwen3.8-Flash-Next-Avalon-GGUF
+  4. Install Godot 4.7.2 (Flathub org.godotengine.Godot), then open game-brilliant/game.
+     Configure Claude Code from the Godot AI panel if you use that integration.
 EOF
+tack doctor

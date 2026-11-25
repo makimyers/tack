@@ -41,6 +41,9 @@ next: tack doctor
 
 Before the first install it starts with `not installed yet; this is what tack install will turn on`.
 `tack list --all` shows each group member on its own row.
+In T3 Code, open the project **Scripts** menu and choose **Skills & tools** to show the grouped list
+and the commands to change it in the terminal. Type `/` in the chat composer to find skills for the
+selected agent. Start a new agent chat after changing its skills.
 
 `tack on` / `tack off` switch a component or a whole group. With no flag it applies to every agent
 the component supports:

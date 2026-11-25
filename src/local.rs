@@ -1,5 +1,4 @@
-//! The one local model: pi's default provider and three T3 Code script buttons (written by
-//! `install`), switched with `tack model on|off|status`.
+//! The local model provider and Tack's T3 Code script buttons.
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
@@ -16,6 +15,7 @@ use crate::paths::{Harness, Paths};
 
 pub const PROVIDER: &str = "tack-local";
 const SCRIPT_PREFIX: &str = "tack-model-";
+const SKILLS_SCRIPT_ID: &str = "tack-skills-tools";
 
 /// Adds the `tack-local` provider to pi's models.json and makes it pi's default.
 /// Returns true when either file changed. Other providers and settings stay.
@@ -45,22 +45,34 @@ pub fn wire_pi(paths: &Paths, lm: &LocalModel) -> Result<bool> {
     Ok(models || settings)
 }
 
-/// Puts "Local model: on / off / status" in T3 Code's scripts menu for every project
-/// (`defaultProjectScripts`). The owner's own scripts stay; tack's are replaced by id.
-pub fn wire_t3(paths: &Paths) -> Result<bool> {
-    let tack = paths.tack_bin().display().to_string();
-    let ours: Vec<Value> = [("status", "test"), ("on", "play"), ("off", "debug")]
-        .iter()
-        .map(|(verb, icon)| {
-            json!({
-                "id": format!("{SCRIPT_PREFIX}{verb}"),
-                "name": format!("Local model: {verb}"),
-                "command": format!("{tack} model {verb}"),
-                "icon": icon,
-                "runOnWorktreeCreate": false
-            })
-        })
-        .collect();
+/// Updates Tack's entries in T3 Code's scripts menu.
+pub fn wire_t3(paths: &Paths, has_local_model: bool) -> Result<bool> {
+    let tack = paths
+        .tack_bin()
+        .display()
+        .to_string()
+        .replace('\'', "'\\''");
+    let mut ours = Vec::new();
+    if has_local_model {
+        ours.extend(
+            [("status", "test"), ("on", "play"), ("off", "debug")].map(|(verb, icon)| {
+                json!({
+                    "id": format!("{SCRIPT_PREFIX}{verb}"),
+                    "name": format!("Local model: {verb}"),
+                    "command": format!("'{tack}' model {verb}"),
+                    "icon": icon,
+                    "runOnWorktreeCreate": false
+                })
+            }),
+        );
+    }
+    ours.push(json!({
+        "id": SKILLS_SCRIPT_ID,
+        "name": "Skills & tools",
+        "command": format!("'{tack}' list"),
+        "icon": "test",
+        "runOnWorktreeCreate": false
+    }));
     edit(paths, &paths.t3_settings(), "t3-settings.json", |o| {
         let scripts = o
             .entry("defaultProjectScripts")
@@ -70,7 +82,7 @@ pub fn wire_t3(paths: &Paths) -> Result<bool> {
         scripts.retain(|s| {
             !s["id"]
                 .as_str()
-                .is_some_and(|id| id.starts_with(SCRIPT_PREFIX))
+                .is_some_and(|id| id == SKILLS_SCRIPT_ID || id.starts_with(SCRIPT_PREFIX))
         });
         scripts.extend(ours);
         Ok(())
@@ -222,7 +234,7 @@ mod tests {
         let mine = r#"{"defaultProjectScripts": [{"id": "dev", "name": "Dev", "command": "npm run dev", "icon": "play", "runOnWorktreeCreate": false}]}"#;
         fs::write(paths.t3_settings(), mine).unwrap();
 
-        assert!(wire_t3(&paths).unwrap());
+        assert!(wire_t3(&paths, true).unwrap());
         let s = json_at(&paths.t3_settings());
         let ids: Vec<_> = s["defaultProjectScripts"]
             .as_array()
@@ -236,7 +248,8 @@ mod tests {
                 "dev",
                 "tack-model-status",
                 "tack-model-on",
-                "tack-model-off"
+                "tack-model-off",
+                "tack-skills-tools"
             ]
         );
         let on = &s["defaultProjectScripts"][2];
@@ -244,8 +257,22 @@ mod tests {
         assert!(on["command"]
             .as_str()
             .unwrap()
-            .ends_with("/bin/tack model on"));
-        assert!(!wire_t3(&paths).unwrap(), "second run changes nothing");
+            .ends_with("/bin/tack' model on"));
+        let skills = &s["defaultProjectScripts"][4];
+        assert_eq!(skills["name"], "Skills & tools");
+        assert!(skills["command"]
+            .as_str()
+            .unwrap()
+            .ends_with("/bin/tack' list"));
+        assert!(
+            !wire_t3(&paths, true).unwrap(),
+            "second run changes nothing"
+        );
+        assert!(wire_t3(&paths, false).unwrap());
+        assert_eq!(
+            json_at(&paths.t3_settings())["defaultProjectScripts"][1],
+            *skills
+        );
         assert_eq!(
             fs::read_to_string(paths.backup_dir().join("t3-settings.json")).unwrap(),
             mine

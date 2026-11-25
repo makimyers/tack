@@ -16,7 +16,7 @@ if [ -f "$0" ] && [ "$(basename "$0")" = install.sh ]; then
   here=$(cd "$(dirname "$0")" && pwd)
   if [ -f "$here/Cargo.toml" ] && command -v cargo >/dev/null 2>&1; then
     echo "building tack from $here"
-    (cd "$here" && cargo build --release)
+    (cd "$here" && cargo build --locked --release)
     exec "$here/target/release/tack" install "$@"
   fi
 fi

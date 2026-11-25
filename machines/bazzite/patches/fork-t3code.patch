@@ -1,0 +1,724 @@
+diff --git a/apps/desktop/package.json b/apps/desktop/package.json
+index bd770e285e71b7f1e642634c23c3a811fcbe70eb..eddd3a540318fad3004445549e5681d1d74ffc59 100644
+--- a/apps/desktop/package.json
++++ b/apps/desktop/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@t3tools/desktop",
+-  "version": "0.1.11",
++  "version": "0.1.12-maki.1",
+   "private": true,
+   "type": "module",
+   "main": "dist-electron/boot.cjs",
+diff --git a/apps/server/package.json b/apps/server/package.json
+index 89d5cef81770ce7104044af6350bf5a79f591f40..07e935b54a3b977cc7a8846a75d78aa33f2d3c70 100644
+--- a/apps/server/package.json
++++ b/apps/server/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "t3",
+-  "version": "0.1.11",
++  "version": "0.1.12-maki.1",
+   "license": "MIT",
+   "repository": {
+     "type": "git",
+diff --git a/apps/server/src/telemetry/AnalyticsService.test.ts b/apps/server/src/telemetry/AnalyticsService.test.ts
+index 8fe1698f4770cc84c8d4abee8dc8784c22cf4177..8beb3e7aa711950f7c2a7703482458c0a1c31747 100644
+--- a/apps/server/src/telemetry/AnalyticsService.test.ts
++++ b/apps/server/src/telemetry/AnalyticsService.test.ts
+@@ -324,14 +324,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, NodeCrypto.layer))("AnalyticsService
+       }),
+   );
+ 
+-  it.effect("sends nothing on a CI runner unless the environment opts in", () =>
++  it.effect("sends usage data only with explicit opt-in", () =>
+     Effect.gen(function* () {
+-      const onCi = (telemetryEnv: Parameters<typeof analyticsLayerWith>[2]) =>
+-        sendFor(1, respondWithStatus(204), recordTwentyEvents, undefined, telemetryEnv).pipe(
+-          Effect.provideService(HostProcess.Environment, { GITHUB_ACTIONS: "true" }),
+-        );
+-      assert.deepEqual(yield* onCi({}), []);
+-      assert.equal((yield* onCi({ T3CODE_TELEMETRY_ENABLED: true })).length, 1);
++      const send = (env: Parameters<typeof analyticsLayerWith>[2]) =>
++        sendFor(1, respondWithStatus(204), recordTwentyEvents, undefined, env);
++      assert.deepEqual(yield* send({}), []);
++      assert.equal((yield* send({ T3CODE_TELEMETRY_ENABLED: true })).length, 1);
+     }),
+   );
+ 
+diff --git a/apps/server/src/telemetry/AnalyticsService.ts b/apps/server/src/telemetry/AnalyticsService.ts
+index 3d92a317fd2ed4d348ab2d20291f59d5ef83003a..5d45d5bb89455da7a09383ba5b28201f697c3609 100644
+--- a/apps/server/src/telemetry/AnalyticsService.ts
++++ b/apps/server/src/telemetry/AnalyticsService.ts
+@@ -1,6 +1,6 @@
+ // T3 ingest retains events and forwards to PostHog; UUIDs deduplicate retries there.
+ import * as HostProcess from "@t3tools/shared/HostProcess";
+-import { isCiEnvironment, isDoNotTrackSet } from "@t3tools/shared/otelEnvironment";
++import { isDoNotTrackSet } from "@t3tools/shared/otelEnvironment";
+ import type { ClientOs } from "@t3tools/contracts";
+ import * as Clock from "effect/Clock";
+ import * as Config from "effect/Config";
+@@ -127,21 +127,24 @@ export const make = Effect.gen(function* () {
+   const telemetryConfig = yield* TelemetryEnvConfig;
+   const hostEnvironment = yield* HostProcess.Environment;
+   const awaitingShellConsent = hostEnvironment.T3CODE_DESKTOP_SHELL_DISCOVERY_PENDING === "1";
+-  const enabledByDefault = !isCiEnvironment(hostEnvironment);
+-  const enabledAtStartup = Option.getOrElse(telemetryConfig.enabled, () => enabledByDefault);
+   // A managed policy can switch analytics off over the environment, never on.
+   const policyAllows =
+     ManagedPolicy.deniedBy(yield* ManagedPolicy.ManagedPolicy, "telemetry") === undefined;
+   // A cached PATH does not establish consent from the current login shell.
+   const telemetryEnabled = Effect.suspend(() => {
+-    if (!enabledAtStartup || !policyAllows || isDoNotTrackSet(hostEnvironment))
++    if (
++      Option.contains(telemetryConfig.enabled, false) ||
++      !policyAllows ||
++      isDoNotTrackSet(hostEnvironment)
++    )
+       return Effect.succeed(false);
+-    if (!awaitingShellConsent) return Effect.succeed(true);
++    if (!awaitingShellConsent)
++      return Effect.succeed(Option.contains(telemetryConfig.enabled, true));
+     if (hostEnvironment.T3CODE_DESKTOP_SHELL_DISCOVERY_PENDING === "1")
+       return Effect.succeed(false);
+     const preference = hostEnvironment.T3CODE_TELEMETRY_ENABLED;
+     return Config.Boolean("T3CODE_TELEMETRY_ENABLED").pipe(
+-      Config.withDefault(enabledByDefault),
++      Config.withDefault(false),
+       Effect.provideService(
+         ConfigProvider.ConfigProvider,
+         ConfigProvider.fromEnv({
+diff --git a/apps/web/package.json b/apps/web/package.json
+index 60a0e045f367f59e9e5ba372dcd95fbf6d673a8e..fe9acc2d2d464883b01a9331af4fc07c41671220 100644
+--- a/apps/web/package.json
++++ b/apps/web/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@t3tools/web",
+-  "version": "0.1.11",
++  "version": "0.1.12-maki.1",
+   "private": true,
+   "type": "module",
+   "scripts": {
+diff --git a/apps/web/src/components/chat/ThreadDetailsUsage.tsx b/apps/web/src/components/chat/ThreadDetailsUsage.tsx
+index 3eac602eb5dec540ba98655d9cc0b509f84557eb..0b47de6fd5318eef285ab0083f1c117b8ba10139 100644
+--- a/apps/web/src/components/chat/ThreadDetailsUsage.tsx
++++ b/apps/web/src/components/chat/ThreadDetailsUsage.tsx
+@@ -131,6 +131,10 @@ export function ThreadDetailsContext({ usage }: { readonly usage: ContextWindowS
+   const m = useMessages();
+   const locale = useLocale();
+   const usedTokens = formatContextWindowTokens(usage.usedTokens);
++  const speed =
++    usage.outputTokensPerSecond != null && usage.outputTokensPerSecond > 0
++      ? Math.round(usage.outputTokensPerSecond).toLocaleString(locale)
++      : null;
+   return (
+     <ThreadDetailsSection
+       headingId="thread-details-context-heading"
+@@ -177,6 +181,24 @@ export function ThreadDetailsContext({ usage }: { readonly usage: ContextWindowS
+             </>
+           }
+         />
++        {speed !== null ? (
++          <UsageRow
++            label={gt("Speed", { $context: "model output speed row label" })}
++            fill={null}
++            tone={null}
++            value={gt("{speed} tok/s", { speed })}
++            tooltip={
++              <>
++                <span className="text-foreground">
++                  {gt("Speed: {speed} tokens per second", { speed })}
++                </span>
++                <span className="text-muted-foreground">
++                  {gt("How fast the model wrote its latest reply, after reading the prompt.")}
++                </span>
++              </>
++            }
++          />
++        ) : null}
+       </div>
+     </ThreadDetailsSection>
+   );
+diff --git a/apps/web/src/i18n/translations/de.json b/apps/web/src/i18n/translations/de.json
+index 5fd6ff3ede89a7a81d36e15752bc754a650fb624..69a7aa7d42d577fcc3c2aa9155a3bf3b11957050 100644
+--- a/apps/web/src/i18n/translations/de.json
++++ b/apps/web/src/i18n/translations/de.json
+@@ -4280,6 +4280,10 @@
+   "7c1d4c58aeb9e1b3": "Kontext: {used} % genutzt",
+   "4214d97447ddd9e9": "Kontext: {usedTokens} Tokens genutzt",
+   "66be4fb43249bbd2": "{used} von {max} Tokens",
++  "1d3110c29c8739b3": "Tempo",
++  "c1432d4fffb4e36b": "{speed} Tok./s",
++  "cc277111f5bfee28": "Tempo: {speed} Tokens pro Sekunde",
++  "bdd4e399da0c8b8e": "Wie schnell das Modell seine letzte Antwort geschrieben hat, nachdem es den Prompt gelesen hatte.",
+   "ee3ae58c8b38a425": "{left} % übrig",
+   "ebb26f93fb83a71b": "{label}: {left} % übrig",
+   "1b16346722b65812": "{timeLeft} % des Zeitfensters übrig",
+diff --git a/apps/web/src/i18n/translations/en.json b/apps/web/src/i18n/translations/en.json
+index fa018a7c51464a86d51b73fcc252d2587a19221b..7bca46998474c629992869ded6c9b14be079b291 100644
+--- a/apps/web/src/i18n/translations/en.json
++++ b/apps/web/src/i18n/translations/en.json
+@@ -4279,6 +4279,10 @@
+   "7c1d4c58aeb9e1b3": "Context: {used}% used",
+   "4214d97447ddd9e9": "Context: {usedTokens} tokens used",
+   "66be4fb43249bbd2": "{used} of {max} tokens",
++  "1d3110c29c8739b3": "Speed",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "Speed: {speed} tokens per second",
++  "bdd4e399da0c8b8e": "How fast the model wrote its latest reply, after reading the prompt.",
+   "ee3ae58c8b38a425": "{left}% left",
+   "ebb26f93fb83a71b": "{label}: {left}% left",
+   "1b16346722b65812": "{timeLeft}% of the window left",
+diff --git a/apps/web/src/i18n/translations/es.json b/apps/web/src/i18n/translations/es.json
+index 50309bfa62b158db0c0c20e158e2b1c529157129..05171ed8ba9ee7268c19cfe3ec150ded82f4283d 100644
+--- a/apps/web/src/i18n/translations/es.json
++++ b/apps/web/src/i18n/translations/es.json
+@@ -4277,6 +4277,10 @@
+   "7c1d4c58aeb9e1b3": "Contexto: {used} % usado",
+   "4214d97447ddd9e9": "Contexto: {usedTokens} tokens usados",
+   "66be4fb43249bbd2": "{used} de {max} tokens",
++  "1d3110c29c8739b3": "Velocidad",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "Velocidad: {speed} tokens por segundo",
++  "bdd4e399da0c8b8e": "Qué tan rápido escribió el modelo su última respuesta, después de leer el prompt.",
+   "ee3ae58c8b38a425": "{left} % restante",
+   "ebb26f93fb83a71b": "{label}: {left} % restante",
+   "1b16346722b65812": "Queda un {timeLeft}% de la ventana",
+diff --git a/apps/web/src/i18n/translations/fr.json b/apps/web/src/i18n/translations/fr.json
+index ef718bab748889edb8d1901a522913b6b5276b8e..374c96319aa0c0ab1447527326daacb60ac8917a 100644
+--- a/apps/web/src/i18n/translations/fr.json
++++ b/apps/web/src/i18n/translations/fr.json
+@@ -4278,6 +4278,10 @@
+   "7c1d4c58aeb9e1b3": "Contexte : {used} % utilisé",
+   "4214d97447ddd9e9": "Contexte : {usedTokens} tokens utilisés",
+   "66be4fb43249bbd2": "{used} tokens sur {max}",
++  "1d3110c29c8739b3": "Vitesse",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "Vitesse : {speed} tokens par seconde",
++  "bdd4e399da0c8b8e": "À quelle vitesse le modèle a écrit sa dernière réponse, après avoir lu le prompt.",
+   "ee3ae58c8b38a425": "{left} % restant",
+   "ebb26f93fb83a71b": "{label} : {left} % restant",
+   "1b16346722b65812": "{timeLeft} % de la fenêtre restant",
+diff --git a/apps/web/src/i18n/translations/ja.json b/apps/web/src/i18n/translations/ja.json
+index 206f1bbddfd7c4b96a1c5274fa25d9c66f7954de..1bbe3fe1ae18d945126e48ec649026eedfb86de8 100644
+--- a/apps/web/src/i18n/translations/ja.json
++++ b/apps/web/src/i18n/translations/ja.json
+@@ -4267,6 +4267,10 @@
+   "7c1d4c58aeb9e1b3": "コンテキスト: {used}% 使用",
+   "4214d97447ddd9e9": "コンテキスト: {usedTokens} トークン使用",
+   "66be4fb43249bbd2": "{used} / {max} トークン",
++  "1d3110c29c8739b3": "速度",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "速度: 毎秒 {speed} トークン",
++  "bdd4e399da0c8b8e": "プロンプトを読み終えた後、モデルが最新の返信を書いた速さです。",
+   "ee3ae58c8b38a425": "残り {left}%",
+   "ebb26f93fb83a71b": "{label}: 残り {left}%",
+   "1b16346722b65812": "期間の残り {timeLeft}%",
+diff --git a/apps/web/src/i18n/translations/ko.json b/apps/web/src/i18n/translations/ko.json
+index 18acb6158025985d14f55401cacd9937cfaca11f..77999d7c00720aa1bdaee49803d357e889d7614e 100644
+--- a/apps/web/src/i18n/translations/ko.json
++++ b/apps/web/src/i18n/translations/ko.json
+@@ -4264,6 +4264,10 @@
+   "7c1d4c58aeb9e1b3": "컨텍스트: {used}% 사용됨",
+   "4214d97447ddd9e9": "컨텍스트: 토큰 {usedTokens}개 사용됨",
+   "66be4fb43249bbd2": "토큰 {max}개 중 {used}개",
++  "1d3110c29c8739b3": "속도",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "속도: 초당 {speed}토큰",
++  "bdd4e399da0c8b8e": "프롬프트를 읽은 뒤 모델이 최신 답변을 작성한 속도입니다.",
+   "ee3ae58c8b38a425": "{left}% 남음",
+   "ebb26f93fb83a71b": "{label}: {left}% 남음",
+   "1b16346722b65812": "기간 {timeLeft}% 남음",
+diff --git a/apps/web/src/i18n/translations/pt-BR.json b/apps/web/src/i18n/translations/pt-BR.json
+index 05b2204a445ae3025d7f0691ca48dc0d17f1a71b..4230f6b99930d5d88a7a484dd4afa01962c0900a 100644
+--- a/apps/web/src/i18n/translations/pt-BR.json
++++ b/apps/web/src/i18n/translations/pt-BR.json
+@@ -4277,6 +4277,10 @@
+   "7c1d4c58aeb9e1b3": "Contexto: {used}% usado",
+   "4214d97447ddd9e9": "Contexto: {usedTokens} tokens usados",
+   "66be4fb43249bbd2": "{used} de {max} tokens",
++  "1d3110c29c8739b3": "Velocidade",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "Velocidade: {speed} tokens por segundo",
++  "bdd4e399da0c8b8e": "A rapidez com que o modelo escreveu a última resposta, depois de ler o prompt.",
+   "ee3ae58c8b38a425": "{left}% restante",
+   "ebb26f93fb83a71b": "{label}: {left}% restante",
+   "1b16346722b65812": "{timeLeft}% da janela restante",
+diff --git a/apps/web/src/i18n/translations/ru.json b/apps/web/src/i18n/translations/ru.json
+index 3556dd9455160491b154c25d06230bbb4d5b35ab..33a97de884c82fef83ae17c02ce1402bbb76414a 100644
+--- a/apps/web/src/i18n/translations/ru.json
++++ b/apps/web/src/i18n/translations/ru.json
+@@ -4277,6 +4277,10 @@
+   "7c1d4c58aeb9e1b3": "Контекст: использовано {used}%",
+   "4214d97447ddd9e9": "Контекст: использовано токенов: {usedTokens}",
+   "66be4fb43249bbd2": "{used} из {max} токенов",
++  "1d3110c29c8739b3": "Скорость",
++  "c1432d4fffb4e36b": "{speed} ток/с",
++  "cc277111f5bfee28": "Скорость: {speed} токенов в секунду",
++  "bdd4e399da0c8b8e": "Как быстро модель написала последний ответ после чтения промпта.",
+   "ee3ae58c8b38a425": "Осталось {left}%",
+   "ebb26f93fb83a71b": "{label}: осталось {left}%",
+   "1b16346722b65812": "От окна осталось {timeLeft}%",
+diff --git a/apps/web/src/i18n/translations/sv.json b/apps/web/src/i18n/translations/sv.json
+index 6b559d46a1f99db089f533cbb04a45cfd0c0dd17..c5335007a5960c5720a63d44963f31b955886aef 100644
+--- a/apps/web/src/i18n/translations/sv.json
++++ b/apps/web/src/i18n/translations/sv.json
+@@ -4278,6 +4278,10 @@
+   "7c1d4c58aeb9e1b3": "Kontext: {used} % använt",
+   "4214d97447ddd9e9": "Kontext: {usedTokens} token använda",
+   "66be4fb43249bbd2": "{used} av {max} token",
++  "1d3110c29c8739b3": "Hastighet",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "Hastighet: {speed} tokens per sekund",
++  "bdd4e399da0c8b8e": "Hur snabbt modellen skrev sitt senaste svar, efter att ha läst prompten.",
+   "ee3ae58c8b38a425": "{left} % kvar",
+   "ebb26f93fb83a71b": "{label}: {left} % kvar",
+   "1b16346722b65812": "{timeLeft} % av fönstret kvar",
+diff --git a/apps/web/src/i18n/translations/zh.json b/apps/web/src/i18n/translations/zh.json
+index 4d6210cc5e6d04990157c1c154adbe20fd976806..d70d1a6401354fcdbde511e1bfc9e66b09b881fa 100644
+--- a/apps/web/src/i18n/translations/zh.json
++++ b/apps/web/src/i18n/translations/zh.json
+@@ -4283,6 +4283,10 @@
+   "7c1d4c58aeb9e1b3": "上下文：已使用 {used}%",
+   "4214d97447ddd9e9": "上下文：已使用 {usedTokens} token",
+   "66be4fb43249bbd2": "{used} / {max} token",
++  "1d3110c29c8739b3": "速度",
++  "c1432d4fffb4e36b": "{speed} tok/s",
++  "cc277111f5bfee28": "速度：每秒 {speed} 个 token",
++  "bdd4e399da0c8b8e": "模型读完提示后写出最新回复的速度。",
+   "ee3ae58c8b38a425": "剩余 {left}%",
+   "ebb26f93fb83a71b": "{label}：剩余 {left}%",
+   "1b16346722b65812": "窗口剩余 {timeLeft}%",
+diff --git a/docs/user/telemetry.md b/docs/user/telemetry.md
+index 05ae99e2d1d312abcfa89bb1a9f96a6f1262a5c6..6474fa8005ef2462a6913252656cc44d21abf2ed 100644
+--- a/docs/user/telemetry.md
++++ b/docs/user/telemetry.md
+@@ -76,10 +76,8 @@ To disable product events and relay tracing from the server, set
+ `DO_NOT_TRACK=1` wins over `T3CODE_TELEMETRY_ENABLED=true`. Relay tracing also stops
+ when `T3CODE_OTEL_SDK_DISABLED` or `OTEL_SDK_DISABLED` turns OpenTelemetry export off.
+ 
+-On a CI runner, the server sends no product events or relay traces by default. It treats a run as
+-CI when a common CI variable is set, such as `CI`, `GITHUB_ACTIONS`, `GITLAB_CI`, or `JENKINS_URL`.
+-`CI=false` and `CI=0` do not count. To send them from CI anyway, set
+-`T3CODE_TELEMETRY_ENABLED=true`.
++This build defaults to product usage events and server relay tracing off.
++Set `T3CODE_TELEMETRY_ENABLED=true` before starting the server to opt in.
+ 
+ An administrator can turn product events and relay tracing off in the server and desktop app with
+ a [managed policy](./managed-policy.md#other-capabilities). This does not control traces sent by
+diff --git a/packages/client-runtime/src/state/contextWindow.ts b/packages/client-runtime/src/state/contextWindow.ts
+index 37374b79b1b04424085590207094af05565e11d8..d2ef1373f498a83d36e6839e22f5be89a904b312 100644
+--- a/packages/client-runtime/src/state/contextWindow.ts
++++ b/packages/client-runtime/src/state/contextWindow.ts
+@@ -39,6 +39,8 @@ export type ContextWindowSnapshot = NullableContextWindowUsage & {
+   readonly remainingTokens: number | null;
+   readonly usedPercentage: number | null;
+   readonly remainingPercentage: number | null;
++  /** Decode speed of the latest reply, when the provider measures it. */
++  readonly outputTokensPerSecond?: number | null;
+   readonly updatedAt: string;
+ };
+ 
+@@ -184,6 +186,7 @@ export function deriveLatestContextWindowSnapshot(
+       compactsAutomatically: true,
+       autoCompactThreshold: liveUsage.autoCompactThreshold ?? null,
+       cost: null,
++      outputTokensPerSecond: liveUsage.outputTokensPerSecond ?? null,
+       updatedAt: liveUsage.updatedAt,
+     };
+   }
+diff --git a/packages/contracts/package.json b/packages/contracts/package.json
+index 70b5d50d2e5dfab2cb1a065ed3378a99176b8210..b609687f59048291031cd61f1d2d08a196e52071 100644
+--- a/packages/contracts/package.json
++++ b/packages/contracts/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "@t3tools/contracts",
+-  "version": "0.1.11",
++  "version": "0.1.12-maki.1",
+   "private": true,
+   "files": [
+     "dist"
+diff --git a/packages/contracts/src/orchestrationV2.ts b/packages/contracts/src/orchestrationV2.ts
+index 563479d00b8591c05ffbfd8ae71bc0aeb61ad843..44e461e3f90ce65c509f3a180ba0492b2dfd112b 100644
+--- a/packages/contracts/src/orchestrationV2.ts
++++ b/packages/contracts/src/orchestrationV2.ts
+@@ -265,6 +265,8 @@ export const OrchestrationV2ProviderTurnTokenUsage = Schema.Struct({
+   promptCacheTtlMs: Schema.optional(PositiveInt),
+   autoCompactThreshold: Schema.optional(PositiveInt),
+   promptCacheExpiresAt: Schema.optional(Schema.String),
++  /** Decode speed of the latest model reply: output tokens over the time from its first streamed token to its end. */
++  outputTokensPerSecond: Schema.optional(Schema.Number.check(Schema.isFinite())),
+   updatedAt: Schema.String,
+ });
+ export type OrchestrationV2ProviderTurnTokenUsage =
+diff --git a/packages/provider-pi/src/server/adapter.test.ts b/packages/provider-pi/src/server/adapter.test.ts
+index 5565f456677f5d7e65bc2e889cdef8c25e744446..4ab5b683c91d5106229a2b6d4f9ed6ec14cfa54d 100644
+--- a/packages/provider-pi/src/server/adapter.test.ts
++++ b/packages/provider-pi/src/server/adapter.test.ts
+@@ -4352,6 +4352,66 @@ describe("PiAdapterV2", () => {
+     }).pipe(Effect.scoped, Effect.provide(layerTest)),
+   );
+ 
++  it.effect("reports the latest reply's output speed from its first streamed token", () =>
++    Effect.gen(function* () {
++      const fake = yield* makeFakePi;
++      fake.queueState({
++        sessionFile: FAKE_SESSION_FILE,
++        model: { provider: "local", id: "qwen", contextWindow: 131_072 },
++      });
++      const { runtime, takeEvent } = yield* openRuntime(fake);
++      const providerThread = yield* runtime.ensureThread({
++        threadId: THREAD_ID,
++        modelSelection: modelSelection("default"),
++        runtimePolicy,
++      });
++      yield* startTurn(runtime, providerThread);
++      yield* fake.takeRequest("prompt");
++      fake.queueStats({ contextUsage: { tokens: 1_301, contextWindow: 131_072 } });
++      yield* fake.emit({ type: "response", command: "prompt", success: true });
++      yield* fake.emit({ type: "agent_start" });
++      yield* fake.emit({ type: "message_start", message: { role: "assistant" } });
++      // Prompt reading happens before the first delta, so it does not slow the reading.
++      yield* TestClock.adjust("3 seconds");
++      yield* fake.emit({
++        type: "message_update",
++        assistantMessageEvent: { type: "text_delta", contentIndex: 0, delta: "ok" },
++      });
++      yield* TestClock.adjust("2 seconds");
++      yield* fake.emit({
++        type: "message_end",
++        message: {
++          role: "assistant",
++          content: [{ type: "text", text: "ok" }],
++          usage: { input: 1_000, output: 201, totalTokens: 1_201 },
++          stopReason: "stop",
++        },
++      });
++      const live = yield* takeEvent(
++        (event) =>
++          event.type === "provider_turn.updated" &&
++          event.providerTurn.tokenUsage?.outputTokensPerSecond !== undefined,
++      );
++      assert.equal(
++        live.type === "provider_turn.updated"
++          ? live.providerTurn.tokenUsage?.outputTokensPerSecond
++          : undefined,
++        100,
++      );
++      yield* fake.emit({ type: "agent_settled" });
++      const completed = yield* takeEvent(
++        (event) =>
++          event.type === "provider_turn.updated" && event.providerTurn.status === "completed",
++      );
++      assert.equal(
++        completed.type === "provider_turn.updated"
++          ? completed.providerTurn.tokenUsage?.outputTokensPerSecond
++          : undefined,
++        100,
++      );
++    }).pipe(Effect.scoped, Effect.provide(layerTest)),
++  );
++
+   it.effect.each(["turn window", "full tree"] as const)(
+     "finishes a turn whose %s has a parentId cycle",
+     (cycleIn) =>
+diff --git a/packages/provider-pi/src/server/adapter.ts b/packages/provider-pi/src/server/adapter.ts
+index 920acee2e20037befbb0e2a52327bbfad38b6fcb..b8f4e05518b5b7a5e2da196c7b9ebccc4e8a8176 100644
+--- a/packages/provider-pi/src/server/adapter.ts
++++ b/packages/provider-pi/src/server/adapter.ts
+@@ -361,9 +361,13 @@ function compactionTitle(status: PiCompactionStatus): string {
+ 
+ type PiMessageTokenUsage = Pick<
+   OrchestrationV2ProviderTurnTokenUsage,
+-  "inputTokens" | "cachedInputTokens" | "outputTokens"
++  "inputTokens" | "cachedInputTokens" | "outputTokens" | "outputTokensPerSecond"
+ >;
+ 
++/** Replies shorter than this give a noisy speed, so they keep the previous reading. */
++const PI_SPEED_MIN_OUTPUT_TOKENS = 8;
++const PI_SPEED_MIN_DURATION_MS = 250;
++
+ interface ActivePiTurn {
+   readonly turnInput: ProviderAdapter.ProviderAdapterV2TurnInput;
+   readonly providerTurn: OrchestrationV2ProviderTurn;
+@@ -383,6 +387,9 @@ interface ActivePiTurn {
+   latestCompactionAfterTokens: number | null;
+   lastLiveUsedTokens: number | null;
+   lastMessageUsage: PiMessageTokenUsage | undefined;
++  /** When the current assistant message streamed its first delta; prompt reading is before it. */
++  messageFirstDeltaAtMs: number | null;
++  lastOutputTokensPerSecond: number | undefined;
+   settleProbeGeneration: number;
+   /** An extension may start compaction immediately after Pi emits agent_settled. */
+   settleWhenIdle: boolean;
+@@ -1075,7 +1082,12 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
+         Effect.fnUntraced(function* (turn: ActivePiTurn, usage: unknown) {
+           const usedTokens = nonNegativeInteger(usage, "totalTokens");
+           if (usedTokens !== undefined && usedTokens > 0) {
+-            turn.lastMessageUsage = piMessageTokenUsage(usage);
++            turn.lastMessageUsage = {
++              ...piMessageTokenUsage(usage),
++              ...(turn.lastOutputTokensPerSecond === undefined
++                ? {}
++                : { outputTokensPerSecond: turn.lastOutputTokensPerSecond }),
++            };
+           }
+           if (
+             usedTokens === undefined ||
+@@ -2356,6 +2368,7 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
+             if (turn !== null && role === "assistant") {
+               turn.sawAgentActivity = true;
+               turn.messageOrdinal += 1;
++              turn.messageFirstDeltaAtMs = null;
+             }
+             const readSteer = role === "user" ? turn?.unreadSteers.shift() : undefined;
+             if (turn !== null && readSteer !== undefined) {
+@@ -2375,6 +2388,9 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
+             yield* reportLiveUsage(turn, event["usage"]);
+             const delta = event["assistantMessageEvent"];
+             const deltaType = recordString(delta, "type");
++            if (turn.messageFirstDeltaAtMs === null && deltaType?.endsWith("_delta") === true) {
++              turn.messageFirstDeltaAtMs = DateTime.toEpochMillis(yield* DateTime.now);
++            }
+             const contentIndex = recordNumber(delta, "contentIndex") ?? 0;
+             if (deltaType === "text_start" || deltaType === "thinking_start") {
+               // A provider that reconnects mid-block starts it again; its earlier text is abandoned.
+@@ -2412,6 +2428,26 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
+             const message = event["message"];
+             if (recordString(message, "role") !== "assistant") return;
+             yield* completeOpenStreamItems(turn);
++            const messageOutputTokens = nonNegativeInteger(recordField(message, "usage"), "output");
++            const firstDeltaAtMs = turn.messageFirstDeltaAtMs;
++            turn.messageFirstDeltaAtMs = null;
++            if (firstDeltaAtMs !== null && messageOutputTokens !== undefined) {
++              const elapsedMs = DateTime.toEpochMillis(yield* DateTime.now) - firstDeltaAtMs;
++              if (
++                messageOutputTokens >= PI_SPEED_MIN_OUTPUT_TOKENS &&
++                elapsedMs >= PI_SPEED_MIN_DURATION_MS
++              ) {
++                // The first delta already carries a token, so it does not count against the clock.
++                turn.lastOutputTokensPerSecond =
++                  Math.round(((messageOutputTokens - 1) / elapsedMs) * 10_000) / 10;
++                turn.lastMessageUsage = {
++                  ...turn.lastMessageUsage,
++                  outputTokensPerSecond: turn.lastOutputTokensPerSecond,
++                };
++                turn.lastLiveUsedTokens = null;
++                yield* reportLiveUsage(turn, recordField(message, "usage"));
++              }
++            }
+             const reportedProvider = recordString(message, "provider");
+             const reportedModelId = recordString(message, "model");
+             if (reportedProvider && reportedModelId) {
+@@ -3542,6 +3578,8 @@ export const makePiAdapterV2 = Effect.fn("makePiAdapterV2")(function* (
+               latestCompactionAfterTokens: null,
+               lastLiveUsedTokens: null,
+               lastMessageUsage: undefined,
++              messageFirstDeltaAtMs: null,
++              lastOutputTokensPerSecond: undefined,
+               settleProbeGeneration: 0,
+               settleWhenIdle: false,
+               compactionCancelled: false,
+diff --git a/packages/provider-pi/src/server/status.test.ts b/packages/provider-pi/src/server/status.test.ts
+index 75ab2a89525c5e47ea95b1555cc8e71bb9fe5b58..b3a972fbda3bd7aec3fe49f05fa7fb1672ebce30 100644
+--- a/packages/provider-pi/src/server/status.test.ts
++++ b/packages/provider-pi/src/server/status.test.ts
+@@ -379,6 +379,33 @@ describe("PiProvider", () => {
+     }).pipe(Effect.provide(NodeServices.layer)),
+   );
+ 
++  it.effect("names Pi's default after the model Pi runs", () =>
++    Effect.gen(function* () {
++      const spawner = yield* piDiscoverySpawner(
++        {
++          models: [
++            { provider: "tack-local", id: "qwen", name: "Qwen Flash · Avalon fast" },
++            { provider: "demo", id: "other", name: "Other" },
++          ],
++        },
++        undefined,
++        undefined,
++        { state: { model: { provider: "tack-local", id: "qwen" } } },
++      );
++      const snapshot = yield* checkPiProviderStatus(settings).pipe(
++        Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
++      );
++      assert.deepEqual(
++        snapshot.models.map((model) => [model.slug, model.name]),
++        [
++          ["default", "Qwen Flash · Avalon fast (default)"],
++          ["tack-local/qwen", "Qwen Flash · Avalon fast"],
++          ["demo/other", "Other"],
++        ],
++      );
++    }).pipe(Effect.provide(NodeServices.layer)),
++  );
++
+   it.effect("preserves normal discovery when the extension-free model listing times out", () =>
+     Effect.gen(function* () {
+       const modelRequested = yield* Deferred.make<void>();
+diff --git a/packages/provider-pi/src/server/status.ts b/packages/provider-pi/src/server/status.ts
+index 76a05fde0b88e8e80d78e0193a39368ff97bd4f0..3c2fd20f75dfc8a66670c793997d39c200854656 100644
+--- a/packages/provider-pi/src/server/status.ts
++++ b/packages/provider-pi/src/server/status.ts
+@@ -81,6 +81,8 @@ const PI_DEFAULT_MODEL: ServerProviderModel = {
+ interface PiDiscovery extends PiDiscoveredCommands {
+   readonly models: ReadonlyArray<ServerProviderModel>;
+   readonly authenticated: boolean;
++  /** The name Pi gives its active (default) model, when Pi lists that model. */
++  readonly activeModelName: string | undefined;
+   /** Pi's active model when Pi lists no model of its provider, so it cannot start a turn. */
+   readonly unavailableActiveModel: { readonly provider: string; readonly id: string } | undefined;
+   /** Pi without extensions can load no model, so text generation fails for every entry. */
+@@ -90,9 +92,15 @@ interface PiDiscovery extends PiDiscoveredCommands {
+ function piModelsFromSettings(
+   customModels: ReadonlyArray<CustomModelSetting> | undefined,
+   discovered: ReadonlyArray<ServerProviderModel> = [],
++  activeModelName?: string,
+ ): ReadonlyArray<ServerProviderModel> {
++  // Name the default after the model it runs, so the picker shows which model Pi uses.
++  const defaultModel =
++    activeModelName === undefined
++      ? PI_DEFAULT_MODEL
++      : { ...PI_DEFAULT_MODEL, name: `${activeModelName} (default)` };
+   return providerModelsFromSettings(
+-    [PI_DEFAULT_MODEL, ...discovered],
++    [defaultModel, ...discovered],
+     customModels ?? [],
+     EMPTY_PI_MODEL_CAPABILITIES,
+   );
+@@ -290,6 +298,11 @@ const discoverPiViaRpc = Effect.fn("PiProviderStatus.discoverPiViaRpc")(function
+     slashCommands: withPiBuiltinSlashCommands(slashCommands),
+     skills,
+     authenticated: discoveredModels.length > 0,
++    activeModelName:
++      activeProvider === undefined || activeModelId === undefined
++        ? undefined
++        : discoveredModels.find((model) => model.slug === `${activeProvider}/${activeModelId}`)
++            ?.name,
+     unavailableActiveModel:
+       activeProvider !== undefined &&
+       activeModelId !== undefined &&
+@@ -627,7 +640,11 @@ export const checkPiProviderStatus = Effect.fn("checkPiProviderStatus")(function
+   }
+ 
+   const discovery = discoveryExit.value.value;
+-  const models = piModelsFromSettings(piSettings.customModels, discovery.models);
++  const models = piModelsFromSettings(
++    piSettings.customModels,
++    discovery.models,
++    discovery.activeModelName,
++  );
+   const message = !discovery.authenticated
+     ? "Pi has no usable models. Run `pi` in a terminal and use /login, or configure an API key in ~/.pi/agent."
+     : discovery.unavailableActiveModel === undefined
+diff --git a/packages/shared/src/otelEnvironment.test.ts b/packages/shared/src/otelEnvironment.test.ts
+index 746beabff76097e9c3c8fdf7eef3c3baa7fbdff9..c416a355a156d01f36f56437fb175654eb9d237b 100644
+--- a/packages/shared/src/otelEnvironment.test.ts
++++ b/packages/shared/src/otelEnvironment.test.ts
+@@ -386,19 +386,6 @@ describe("OtelEnvironment", () => {
+   });
+ });
+ 
+-describe("isCiEnvironment", () => {
+-  it("treats a set CI variable as CI, except empty, false, and 0", () => {
+-    assert.isFalse(OtelEnvironment.isCiEnvironment({}));
+-    assert.isTrue(OtelEnvironment.isCiEnvironment({ CI: "1" }));
+-    assert.isTrue(OtelEnvironment.isCiEnvironment({ TF_BUILD: "True" }));
+-    assert.isTrue(OtelEnvironment.isCiEnvironment({ BITBUCKET_BUILD_NUMBER: "42" }));
+-    for (const value of ["", " ", "false", "FALSE", "0"]) {
+-      assert.isFalse(OtelEnvironment.isCiEnvironment({ CI: value }), `CI=${value}`);
+-    }
+-    assert.isTrue(OtelEnvironment.isCiEnvironment({ CI: "false", GITLAB_CI: "true" }));
+-  });
+-});
+-
+ describe("isRelayTracingEnabled", () => {
+   it("turns off for DO_NOT_TRACK, even when T3 telemetry is on", () => {
+     assert.isFalse(OtelEnvironment.isRelayTracingEnabled({ DO_NOT_TRACK: "1" }));
+@@ -408,21 +395,32 @@ describe("isRelayTracingEnabled", () => {
+         T3CODE_TELEMETRY_ENABLED: "1",
+       }),
+     );
+-    assert.isTrue(OtelEnvironment.isRelayTracingEnabled({ DO_NOT_TRACK: "0" }));
+-    assert.isTrue(OtelEnvironment.isRelayTracingEnabled({ DO_NOT_TRACK: "" }));
++    assert.isTrue(
++      OtelEnvironment.isRelayTracingEnabled({
++        DO_NOT_TRACK: "0",
++        T3CODE_TELEMETRY_ENABLED: "true",
++      }),
++    );
+   });
+ 
+-  it("defaults on and respects the T3CODE SDK override of the standard kill switch", () => {
+-    assert.isTrue(OtelEnvironment.isRelayTracingEnabled({}));
+-    assert.isFalse(OtelEnvironment.isRelayTracingEnabled({ OTEL_SDK_DISABLED: "true" }));
++  it("defaults off and respects the T3CODE SDK override of the standard kill switch", () => {
++    assert.isFalse(OtelEnvironment.isRelayTracingEnabled({}));
++    assert.isFalse(
++      OtelEnvironment.isRelayTracingEnabled({
++        T3CODE_TELEMETRY_ENABLED: "true",
++        OTEL_SDK_DISABLED: "true",
++      }),
++    );
+     assert.isTrue(
+       OtelEnvironment.isRelayTracingEnabled({
++        T3CODE_TELEMETRY_ENABLED: "true",
+         OTEL_SDK_DISABLED: "true",
+         T3CODE_OTEL_SDK_DISABLED: "false",
+       }),
+     );
+     assert.isFalse(
+       OtelEnvironment.isRelayTracingEnabled({
++        T3CODE_TELEMETRY_ENABLED: "true",
+         OTEL_SDK_DISABLED: "false",
+         T3CODE_OTEL_SDK_DISABLED: "true",
+       }),
+diff --git a/packages/shared/src/otelEnvironment.ts b/packages/shared/src/otelEnvironment.ts
+index 29267c634414deb32c9ab442b347104e8593530f..230bfb49c550b993927f1fbbbd772cb6f1994a73 100644
+--- a/packages/shared/src/otelEnvironment.ts
++++ b/packages/shared/src/otelEnvironment.ts
+@@ -318,30 +318,6 @@ export const load: Effect.Effect<OtelEnvironment> = Config.all({
+   Effect.orDie,
+ );
+ 
+-// Variables CI services set on their runners. `CI=false` or `CI=0` means not CI.
+-const CI_VARIABLES = [
+-  "CI",
+-  "GITHUB_ACTIONS",
+-  "GITLAB_CI",
+-  "CIRCLECI",
+-  "TRAVIS",
+-  "BUILDKITE",
+-  "JENKINS_URL",
+-  "TEAMCITY_VERSION",
+-  "TF_BUILD",
+-  "BITBUCKET_BUILD_NUMBER",
+-  "CODEBUILD_BUILD_ID",
+-  "DRONE",
+-  "APPVEYOR",
+-] as const;
+-
+-/** CI runs are not installs, so telemetry is off there unless `T3CODE_TELEMETRY_ENABLED` says otherwise. */
+-export const isCiEnvironment = (env: Readonly<Record<string, string | undefined>>) =>
+-  CI_VARIABLES.some((name) => {
+-    const value = env[name]?.trim().toLowerCase();
+-    return value !== undefined && value !== "" && value !== "false" && value !== "0";
+-  });
+-
+ /** The cross-tool `DO_NOT_TRACK=1` convention turns off product analytics and relay tracing. */
+ export const isDoNotTrackSet = (env: Readonly<Record<string, string | undefined>>) =>
+   T3CODE_TRUE.includes(env.DO_NOT_TRACK?.trim().toLowerCase() ?? "");
+@@ -353,9 +329,7 @@ export const isRelayTracingEnabled = (env: Readonly<Record<string, string | unde
+   }).pipe(
+     Effect.map(
+       ({ telemetry, t3, spec }) =>
+-        (telemetry.value ?? !isCiEnvironment(env)) &&
+-        !isDoNotTrackSet(env) &&
+-        !(t3.value ?? spec.value ?? false),
++        telemetry.value === true && !isDoNotTrackSet(env) && !(t3.value ?? spec.value ?? false),
+     ),
+     Effect.provide(ConfigProvider.layer(ConfigProvider.fromEnvRecord(env))),
+     Effect.orDie,

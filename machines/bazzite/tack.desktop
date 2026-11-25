@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Tack
-Comment=Start the local model and open T3 Code (pi + Claude Code)
+Comment=Open the installed T3 Code fork (Pi + Claude Code)
 Exec=konsole --title Tack -e /var/home/maki/.local/bin/tack open
 Path=/var/home/maki/Projects
 Icon=applications-development
