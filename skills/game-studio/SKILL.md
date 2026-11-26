@@ -14,6 +14,8 @@ the Godot kit it copies is in `~/Projects/tool-claude-setup/templates/game-studi
 
 Open the game folder in T3 Code (Claude for judgement and review; pi on the local model, or the `local-worker` skill, for bulk code). Start in the desired worktree. Use its verifier. The owner starts the playtest and capture, then shares the local session.md. Use the `playcap-review` skill to review the remarks and their pictures. The owner judges feel.
 
+Before asking the owner to play, put the exact launch command, build revision, starting landmark, and a short numbered checklist in the handoff. Give each item a place to stand or a route to follow and one specific question they can answer in the capture. Name any nearby areas that still use the old assets so the owner can identify the trial. Ask for a timestamp or landmark if something looks wrong.
+
 ## Jobs
 
 | Job | Do this | Read |
